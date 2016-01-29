@@ -1,1 +1,1 @@
-engines/node-engine.cwl
+../engines/node-engine.cwl
