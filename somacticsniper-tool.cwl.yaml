@@ -1,0 +1,99 @@
+#!/usr/bin/env cwl-runner
+
+description: |
+    Usage: cwl-runner <path_to_cwl_file> options
+    Options:
+        --ref           path to reference genome
+        --normal        path to normal bam file
+        --tumor         path to tumor bam file
+        --snp           path to output snp file
+        --config        path to config file for database
+        --normal_id     universal identifier for normal dataset
+        --tumor_id      universal identifier for tumor dataset
+        --case_id       unique identifier for the patient
+        --outdir        path to output directory
+
+requirements:
+  - import: node-engine.cwl
+  - class: DockerRequirement
+    dockerPull: somaticsniper:v0.8
+
+class: CommandLineTool
+
+inputs:
+  - id: "#ref"
+    type: File
+    inputBinding:
+        prefix: --ref
+        secondaryFiles:
+          - ".fai"
+
+  - id: "#normal"
+    type: File
+    inputBinding:
+        prefix: --normal
+            
+  - id: "#tumor"
+    type: File
+    inputBinding:
+        prefix: --tumor
+
+  - id: "#snp"
+    type: string
+    inputBinding:
+        prefix: --snp
+
+  - id: "#config"
+    type: File
+    inputBinding:
+        prefix: --config
+
+  - id: "#normal_id"
+    type: string
+    default: "unknown"
+    inputBinding:
+        prefix: --normal_id
+
+  - id: "#tumor_id"
+    type: string
+    default: "unknown"
+    inputBinding:
+        prefix: --tumor_id
+
+  - id: "#case_id"
+    type: string
+    default: "unknown"
+    inputBinding:
+        prefix: --case_id
+
+  - id: "#outdir"
+    type: string
+    default: "./"
+    inputBinding:
+        prefix: --outdir
+
+outputs:
+  - id: "#snp_out"
+    type: File
+    description: "snp file"
+    outputBinding: 
+        glob:
+            engine: node-engine.cwl
+            script: |
+                {
+                return $job['snp']
+                }
+
+  - id: "#log"
+    type: File
+    description: "python log file"
+    outputBinding: 
+        glob:
+            engine: node-engine.cwl
+            script: |
+                {
+                return $job['case_id']+".somaticsniper.log"
+                }
+baseCommand: ["/home/ubuntu/.virtualenvs/p3/bin/python","/home/ubuntu/bin/somaticsniper-tool/somaticsniper-main.py"]
+
+
