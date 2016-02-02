@@ -16,6 +16,7 @@ class ToolTypeMixin(object):
 
     id = Column(Integer, primary_key=True)
     case_id = Column(String)
+    vcf_id = Column(String)
     files = Column(ARRAY(String))
     status = Column(String)
     location = Column(String)
@@ -48,7 +49,7 @@ class Status(object):
 class Files(object):
     pass
 
-def add_status(engine, case_id, file_ids, status, output_location):
+def add_status(engine, case_id, vcf_id, file_ids, status, output_location):
     """ add provided metrics to database """
 
     Session = sessionmaker()
@@ -56,6 +57,7 @@ def add_status(engine, case_id, file_ids, status, output_location):
     session = Session()
 
     met = Somaticsniper(case_id = case_id,
+                    vcf_id = vcf_id,
                     files=file_ids,
                     status=status,
                     location=output_location)

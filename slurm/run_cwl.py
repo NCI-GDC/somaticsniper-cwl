@@ -3,6 +3,8 @@ import pipelineUtil
 import uuid
 import os
 import postgres
+import setupLog
+import logging
 
 if __name__ == "__main__":
 
@@ -23,34 +25,45 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     #create directory structure
-    index = os.path.join(basedir, "index")
-    workdir = os.path.join(basedir, "workdir")
-    inp = os.path.join(basedir, "input")
-    os.mkdir(index)
-    os.mkdir(workdir)
-    os.mkdir(inp)
+    index = os.path.join(args.basedir, "index")
+    workdir = os.path.join(args.basedir, "workdir")
+    inp = os.path.join(args.basedir, "input")
+
+    if not os.path.isdir(index):
+        os.mkdir(index)
+
+    if not os.path.isdir(workdir):
+        os.mkdir(workdir)
+
+    if not os.path.isdir(inp):
+        os.mkdir(inp)
 
     #generate a random uuid
     vcf_uuid = uuid.uuid4()
+    vcf_file = "%s.snp" %(str(vcf_uuid))
 
     #setup logger
     log_file = "%s.somaticsniper.cwl.log" %vcf_uuid
-    logger = setupLog.setup_logging(logging.INFO, vcf_uuid, log_file)
+    logger = setupLog.setup_logging(logging.INFO, str(vcf_uuid), log_file)
 
     #download bam files
     reference = os.path.join(index, "GRCh38.d1.vd1.fa")
     if not os.path.isfile(reference):
+        print("getting reference")
         pipelineUtil.download_from_cleversafe(logger, args.ref, index)
         reference = os.path.join(index, os.path.basename(args.ref))
 
     reference_index = os.path.join(index, "GRCh38.d1.vd1.fa.fai")
     if not  os.path.isfile(reference_index):
+        print("getting reference index")
         pipelineUtil.download_from_cleversafe(logger, args.refindex, index)
         reference_index = os.path.join(index, os.path.basename(args.refindex))
 
+    print("getting normal bam")
     pipelineUtil.download_from_cleversafe(logger, args.normal, inp)
     bam_norm = os.path.join(inp, os.path.basename(args.normal))
 
+    print("geeting tumor bam")
     pipelineUtil.download_from_cleversafe(logger, args.tumor,  inp)
     bam_tumor = os.path.join(inp, os.path.basename(args.tumor))
 
@@ -65,16 +78,35 @@ if __name__ == "__main__":
             "--case_id", args.case_id,
             "--username", args.username,
             "--password", args.password,
-            "--snp","%s.snp" %uuid_vcf
+            "--snp", vcf_file,
             ]
 
     pipelineUtil.run_command(cmd, logger)
 
     #upload results to s3
     s3dir = 's3://bioinformatics_scratch/ss_cwl_test/'
-    pipelineUtil.upload_to_cleversafe(logger, os.path.join(s3dir, "snp_test"), os.path.join(workdir, "%s.snp" %uuid_vcf))
-    pipelineUtil.upload_to_cleverasfe(logger, os.path.join(s3dir, "test_log"), log_file)
-
+    snp_location = os.path.join(s3dir, 'somaticsniper', str(vcf_uuid))
+    ec_1 = pipelineUtil.upload_to_cleversafe(logger, os.path.join(snp_location, vcf_file), os.path.join(workdir, vcf_file))
+    ec_2 = pipelineUtil.upload_to_cleversafe(logger, os.path.join(snp_location, "%s.somaticsniper.cwl.log" %(str(vcf_uuid))), log_file)
+    ec_3 = pipelineUtil.upload_to_cleversafe(logger, os.path.join(snp_location, "%s.somaticsniper.log" %(str(vcf_uuid))), os.path.join(workdir, "%s.somaticsniper.log" %args.case_id))
     #update results on postgres
 
+    DATABASE = {
+        'drivername': 'postgres',
+        'host' : 'pgreadwrite.osdc.io',
+        'port' : '5432',
+        'username': args.username,
+        'password' : args.password,
+        'database' : 'prod_bioinfo'
+    }
+
+    engine = postgres.db_connect(DATABASE)
+
+    if not(ec_1 and ec_2 and ec_3):
+
+        postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "COMPLETED", snp_location)
+
+    else:
+
+        postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "FAILED", snp_location)
 

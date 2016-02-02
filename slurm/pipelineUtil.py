@@ -65,7 +65,7 @@ def run_command(cmd, logger=None, shell_var=False):
         for line in stderrdata:
             logger.info(line)
 
-    return  exit_code
+    return exit_code
 
 def log_function_time(config, fn, analysis_id, cmd, logger=None, shell_var=False):
     """ Log the time taken by a command to the logger """
