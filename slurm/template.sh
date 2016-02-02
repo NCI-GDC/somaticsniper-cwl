@@ -3,21 +3,20 @@
 #SBATCH --ntasks=1
 #SBATCH --workdir=/mnt/scratch/
 
-normal="XX_NORMAL_BAM_PATH_XX"
-tumor="XX_TUMOR_BAM_PATH_XX"
-normal_id="XX_NORMAL_GDC_ID_XX"
-tumor_id="XX_TUMOR_GDC_ID_XX"
+normal="XX_NORMAL_XX"
+tumor="XX_TUMOR_XX"
+normal_id="XX_NORMAL_ID_XX"
+tumor_id="XX_TUMOR_ID_XX"
 case_id="XX_CASE_ID_XX"
 
 deploy_key="s3://bioinformatics_scratch/deploy_key/coclean_cwl_deploy_rsa"
 basedir="/mnt/SCRATCH/test"
 ref="s3://bioinformatics_scratch/GRCh38.d1.vd1.fa"
-refindex="s3://bioinformatics_scratch/GRCh38.v1.d1.fa.fai"
+refindex="s3://bioinformatics_scratch/GRCh38.d1.vd1.fa.fai"
 username="username"
 password="password"
 repository="https://github.com/NCI-GDC/somaticsniper-cwl.git"
-
-cwl="${HOME}/nci-gdc/somaticsniper-cwl/tools/somaticsniper-tool.cwl.yaml"
+cwl="home/ubuntu/somaticsniper-cwl/tools/somaticsniper-tool.cwl.yaml"
 
 
 #function clone_cwl
@@ -42,8 +41,7 @@ cwl="${HOME}/nci-gdc/somaticsniper-cwl/tools/somaticsniper-tool.cwl.yaml"
 #        fi
 #    fi
 #}
-
-echo "get cwl"
+#echo "get cwl"
 #clone_cwl()
 
-/usr/bin/python /home/ubuntu/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $basedir --cwl $cwl
+/usr/bin/python /home/ubuntu/nci-gdc/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $basedir --cwl $cwl

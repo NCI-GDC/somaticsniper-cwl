@@ -27,7 +27,7 @@ class ToolTypeMixin(object):
 
 class Somaticsniper(ToolTypeMixin, Base):
 
-    __tablename__ = 'somaticsniper_table'
+    __tablename__ = 'somaticsniper_status'
 
 
 def db_connect(database):
