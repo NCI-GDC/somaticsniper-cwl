@@ -50,13 +50,6 @@ def remove_dir(dirname):
     """ Remove a directory and all it's contents """
 
     if os.path.isdir(dirname):
-        for filename in os.listdir(dirname):
-            filename = os.path.join(dirname, filename)
-            if os.path.isfile(filename):
-                os.remove(filename)
-            else:
-                shutil.rmtree(filename)
-        assert(os.listdir(dirname) == [])
-        os.rmdir(dirname)
+        shutil.rmtree(dirname)
     else:
         raise Exception("Invalid directory: %s" % dirname)
