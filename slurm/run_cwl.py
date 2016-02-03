@@ -36,19 +36,6 @@ if __name__ == "__main__":
     inp = tempfile.mkdtemp(prefix="input_", dir=args.basedir)
     index = tempfile.mkdtemp(prefix="index_", dir=args.basedir)
 
-    #index = os.path.join(args.basedir, "index")
-    #workdir = os.path.join(args.basedir, "workdir")
-    #inp = os.path.join(args.basedir, "input")
-
-    #if not os.path.isdir(index):
-    #    os.mkdir(index)
-
-    #if not os.path.isdir(workdir):
-    #    os.mkdir(workdir)
-
-    #if not os.path.isdir(inp):
-    #    os.mkdir(inp)
-
     #generate a random uuid
     vcf_uuid = uuid.uuid4()
     vcf_file = "%s.vcf" %(str(vcf_uuid))
