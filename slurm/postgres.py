@@ -68,6 +68,41 @@ def add_status(engine, case_id, vcf_id, file_ids, status, output_location):
     session.commit()
     session.close()
 
+def get_case(engine):
+
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+
+    meta = MetaData(engine)
+
+    #read the coclean table
+    status = Table('coclean_caseid_gdcid', meta,
+                        Column("case_id", String, primary_key=True),
+                        Column("gdc_id", String, primary_key=True),
+                        autoload=True)
+
+    mapper(Status, status)
+
+    data = Table('tcga_wxs_tn_table', meta, autoload=True)
+
+    mapper(Files, data)
+    count = 0
+    s = dict()
+
+    cases = session.query(Files).all()
+    for row in cases:
+
+        coclean_norm = session.query(Status).filter(Status.gdc_id == row.gdc_harmonized_id.normal).first()
+
+        coclean_tumor = session.query(Status).filter(Status.gdc_id == row.gdc_harmonized_id.tumor).first()
+
+        if coclean_norm.status == "COMPLETE" and coclean_tumor.status == "COMPLETE":
+            s[count] = [row.case_id, row.gdc_harmonized_id.normal, coclean_normal.output_location, row.gdc_harmonized_id.tumor, coclean_tumor.output_location]
+            count += 1
+
+    return s
+
 def get_complete_cases(engine):
     """ Get complete cases from the database """
 
@@ -115,7 +150,7 @@ def get_complete_cases(engine):
                 tumor_file[case_id] = list()
 
             tumor[case_id].append(gdc_id)
-            tumor_file[case_id].append(output_location)
+            tumor_file[gdc_id] = output_location
 
         if "normal" in sample_type.lower():
             if case_id not in normal:
@@ -123,7 +158,7 @@ def get_complete_cases(engine):
                 normal_file[case_id] = list()
 
             normal[case_id].append(gdc_id)
-            normal_file[case_id].append(output_location)
+            normal_file[gdc_id] = output_location
 
 
     session.close()
