@@ -43,9 +43,10 @@ if __name__ == "__main__":
         raise Exception("Could not find path to base directory: %s" %args.basedir)
 
     #create directory structure
-    workdir = tempfile.mkdtemp(prefix="workdir_", dir=args.basedir)
-    inp = tempfile.mkdtemp(prefix="input_", dir=args.basedir)
-    index = tempfile.mkdtemp(prefix="index_", dir=args.basedir)
+    casedir = tempfile.mkdtemp(prefix="%s_" %args.case_id, dir=args.basedir)
+    workdir = tempfile.mkdtemp(prefix="workdir_", dir=casedir)
+    inp = tempfile.mkdtemp(prefix="input_", dir=casedir)
+    index = tempfile.mkdtemp(prefix="index_", dir=casedir)
 
     #generate a random uuid
     vcf_uuid = uuid.uuid4()
@@ -136,6 +137,7 @@ if __name__ == "__main__":
         postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "FAILED", snp_location)
 
     #remove work and input directories
-    pipelineUtil.remove_dir(index)
-    pipelineUtil.remove_dir(inp)
-    pipelineUtil.remove_dir(workdir)
+    pipelineUtil.remove_dir(casedir)
+    #pipelineUtil.remove_dir(index)
+    #pipelineUtil.remove_dir(inp)
+    #pipelineUtil.remove_dir(workdir)
