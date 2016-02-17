@@ -63,7 +63,6 @@ def add_status(engine, case_id, vcf_id, file_ids, status, output_location):
                     location=output_location)
 
     create_table(engine, met)
-
     session.add(met)
     session.commit()
     session.close()

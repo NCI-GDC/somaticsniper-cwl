@@ -38,7 +38,7 @@ if __name__ == "__main__":
         for tum in tumor[case_id]:
             for norm in normal[case_id]:
                 pair = [norm, tum]
-                slurm = open(os.path.join(args.outdir, "%s.%s.sh" %(norm, tum)), "w")
+                slurm = open(os.path.join(args.outdir, "ss.%s.%s.sh" %(norm, tum)), "w")
                 temp = open("template.sh", "r")
                 for line in temp:
                     if "XX_NORMAL_XX" in line:

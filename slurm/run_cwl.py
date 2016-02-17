@@ -7,6 +7,69 @@ import setupLog
 import logging
 import tempfile
 
+def compress_output(workdir, logger):
+    """ compress all files in a directory """
+
+
+    for filename in os.listdir(workdir):
+        filepath = os.path.join(workdir, filename)
+        cmd = ['gzip', filepath]
+        exit = pipelineUtil.run_command(cmd)
+        if exit:
+            raise Exception("Cannot compress file %s" %filepath)
+        else:
+            logger.info("succesfully compressed %s" %filepath)
+
+def update_postgres(exit, cwl_failure, vcf_upload_location, snp_location, logger):
+    """ update the status of job on postgres """
+
+    loc = 'UNKNOWN'
+    status = 'UNKNOWN'
+
+
+    if sum(exit) == 0:
+
+        loc = vcf_upload_location
+
+        if not(cwl_failure):
+
+            status = 'SUCCESS'
+            logger.info("uploaded all files to object store. The path is: %s" %snp_location)
+
+        else:
+
+            status = 'COMPLETE'
+            logger.info("CWL failed but outputs were generated. The path is: %s" %snp_location)
+
+    else:
+
+        loc = 'Not Applicable'
+
+        if not(cwl_failure):
+
+            status = 'UPLOAD FAILURE'
+            logger.info("Upload of files failed")
+
+        else:
+            status = 'FAILED'
+            logger.info("CWL and upload both failed")
+
+    return(status, loc)
+
+def upload_all_output(localdir, remotedir, logger):
+    """ upload output files to object store """
+
+    all_exit_code = list()
+
+    for filename in os.listdir(localdir):
+        localfilepath = os.path.join(localdir, filename)
+        remotefilepath = os.path.join(remotedir, filename)
+        exit_code = pipelineUtil.upload_to_cleversafe(logger, remotefilepath, localfilepath)
+        all_exit_code.append(exit_code)
+
+    return all_exit_code
+
+
 def get_input_file(fromlocation, tolocation, logger):
     """ download a file and return its location"""
 
@@ -110,34 +173,28 @@ if __name__ == "__main__":
 
     engine = postgres.db_connect(DATABASE)
 
-
+    cwl_failure = False
     if cwl_exit:
+        cwl_failure = True
 
-        postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "FAILED", "unknown")
+    #rename outputs
+    orglog = os.path.join(workdir, "%s.somaticsniper.log" %args.case_id)
+    os.rename(orglog, os.path.join(workdir, "%s.somaticsniper.log" %str(vcf_uuid)))
+
+    #compress output
+    compress_output(workdir, logger)
 
     #upload results to s3
+    snp_location = os.path.join(args.s3dir, str(vcf_uuid))
 
-    snp_location = os.path.join(args.s3dir, 'somaticsniper', str(vcf_uuid))
     vcf_upload_location = os.path.join(snp_location, vcf_file)
 
-    ec_1 = pipelineUtil.upload_to_cleversafe(logger, vcf_upload_location, os.path.join(workdir, vcf_file))
+    exit = upload_all_output(workdir, snp_location, logger)
 
-    ec_2 = pipelineUtil.upload_to_cleversafe(logger, os.path.join(snp_location, "%s.somaticsniper.cwl.log" %(str(vcf_uuid))), log_file)
+    status, loc = update_postgres(exit, cwl_failure, vcf_upload_location, snp_location, logger)
 
-    ec_3 = pipelineUtil.upload_to_cleversafe(logger, os.path.join(snp_location, "%s.somaticsniper.log" %(str(vcf_uuid))),
-                                             os.path.join(workdir, "%s.somaticsniper.log" %args.case_id))
-
-
-    if not(ec_1 and ec_2 and ec_3):
-
-        postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "COMPLETED", vcf_upload_location)
-
-    else:
-
-        postgres.add_status(engine, args.case_id, str(vcf_uuid), [args.normal_id, args.tumor_id], "FAILED", snp_location)
+    postgres.add_status(engine, args.case_id, str(vcf_uuid),
+                        [args.normal_id, args.tumor_id], status, loc)
 
     #remove work and input directories
     pipelineUtil.remove_dir(casedir)
-    #pipelineUtil.remove_dir(index)
-    #pipelineUtil.remove_dir(inp)
-    #pipelineUtil.remove_dir(workdir)
