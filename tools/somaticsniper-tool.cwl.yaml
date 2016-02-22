@@ -7,16 +7,17 @@ description: |
         --normal        path to normal bam file
         --tumor         path to tumor bam file
         --snp           path to output snp file
-        --config        path to config file for database
         --normal_id     universal identifier for normal dataset
         --tumor_id      universal identifier for tumor dataset
         --case_id       unique identifier for the patient
         --outdir        path to output directory
+        --username      username for postgres database
+        --password      password for postgres database
 
 requirements:
   - import: node-engine.cwl
   - class: DockerRequirement
-    dockerPull: somaticsniper:v0.8
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:latest
 
 class: CommandLineTool
 
@@ -43,10 +44,15 @@ inputs:
     inputBinding:
         prefix: --snp
 
-  - id: "#config"
-    type: File
+  - id: "#username"
+    type: string
     inputBinding:
-        prefix: --config
+        prefix: --username
+
+  - id: "#password"
+    type: string
+    inputBinding:
+        prefix: --password
 
   - id: "#normal_id"
     type: string
@@ -94,6 +100,7 @@ outputs:
                 {
                 return $job['case_id']+".somaticsniper.log"
                 }
+
 baseCommand: ["/home/ubuntu/.virtualenvs/p3/bin/python","/home/ubuntu/bin/somaticsniper-tool/somaticsniper-main.py"]
 
 
