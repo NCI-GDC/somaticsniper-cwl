@@ -15,13 +15,11 @@ username="XX_username_XX"
 password="XX_password_XX"
 repository="git@github.com:NCI-GDC/somaticsniper-cwl.git"
 cwl="/home/ubuntu/somaticsniper-cwl/tools/somaticsniper-tool.cwl.yaml"
-dir="/home/ubuntu/somaticsniper-cwl/"
-s3dir="s3://sniper_variant/"
+s3dir="s3://washu_sniper_variant/"
 
-if [ ! -d $dir ];then
-    sudo git clone -b feat/slurm $repository $dir 
-    sudo chown ubuntu:ubuntu $dir
-fi
-
-/home/ubuntu/.virtualenvs/p2/bin/python /home/ubuntu/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $basedir --cwl $cwl --s3dir $s3dir
-
+wkdir=`mktemp -d -p /home/ubuntu/SCRATCH` 
+cd $wkdir 
+sudo git clone -b feat/slurm $repository somaticsniper-cwl  
+sudo chown ubuntu:ubuntu somaticsniper-cwl 
+/home/ubuntu/.virtualenvs/p2/bin/python $wkdir/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $basedir --cwl $cwl --s3dir $s3dir
+sudo rm -rf $wkdir

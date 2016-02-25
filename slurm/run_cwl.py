@@ -56,7 +56,7 @@ def update_postgres(exit, cwl_failure, vcf_upload_location, snp_location, logger
 
     return(status, loc)
 
-def upload_all_output(localdir, remotedir, logger):
+def upload_all_output(localdir, remotedir, logger, s3cfg="/home/ubuntu/.s3cfg"):
     """ upload output files to object store """
 
     all_exit_code = list()
@@ -64,16 +64,16 @@ def upload_all_output(localdir, remotedir, logger):
     for filename in os.listdir(localdir):
         localfilepath = os.path.join(localdir, filename)
         remotefilepath = os.path.join(remotedir, filename)
-        exit_code = pipelineUtil.upload_to_cleversafe(logger, remotefilepath, localfilepath)
+        exit_code = pipelineUtil.upload_to_cleversafe(logger, remotefilepath, localfilepath, s3cfg)
         all_exit_code.append(exit_code)
 
     return all_exit_code
 
 
-def get_input_file(fromlocation, tolocation, logger):
+def get_input_file(fromlocation, tolocation, logger, s3cfg="/home/ubuntu/.s3cfg"):
     """ download a file and return its location"""
 
-    exit_code = pipelineUtil.download_from_cleversafe(logger, fromlocation, tolocation)
+    exit_code = pipelineUtil.download_from_cleversafe(logger, fromlocation, tolocation, s3cfg)
 
     if exit_code:
         raise Exception("Cannot download file: %s" %(fromlocation))
@@ -99,6 +99,8 @@ if __name__ == "__main__":
     optional = parser.add_argument_group("Optional input parameters")
     optional.add_argument("--s3dir", default="s3://bioinformatics_scratch/", help="path to output files")
     optional.add_argument("--basedir", default="/mnt/SCRATCH/", help="Base directory for computations")
+    optional.add_argument("--s3clsafe", default="/home/ubuntu/.s3cfg.cleversafe", help="Config file for cleversafe")
+    optional.add_argument("--s3ceph", default="/home/ubuntu/.s3cfg.ceph", help="Config file for ceph")
 
     args = parser.parse_args()
 
@@ -137,11 +139,17 @@ if __name__ == "__main__":
 
     #download normal bam
     logger.info("getting normal bam: %s" %args.normal)
-    bam_norm = get_input_file(args.normal, inp, logger)
+    if "ceph" in args.normal:
+        bam_norm = get_input_file(args.normal, inp, logger, args.s3ceph)
+    else:
+        bam_norm = get_input_file(args.normal, inp, logger, args.s3clsafe)
 
     #download tumor bam
     logger.info("getting tumor bam: %s" %args.tumor)
-    bam_tumor = get_input_file(args.tumor, inp, logger)
+    if "ceph" in args.tumor:
+        bam_tumor = get_input_file(args.tumor, inp, logger, args.s3ceph)
+    else:
+        bam_tumor = get_input_file(args.tumor, inp, logger, args.s3clsafe)
 
     os.chdir(workdir)
     #run cwl command
@@ -189,7 +197,7 @@ if __name__ == "__main__":
 
     vcf_upload_location = os.path.join(snp_location, vcf_file)
 
-    exit = upload_all_output(workdir, snp_location, logger)
+    exit = upload_all_output(workdir, snp_location, logger, args.s3ceph)
 
     status, loc = update_postgres(exit, cwl_failure, vcf_upload_location, snp_location, logger)
 
