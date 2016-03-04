@@ -78,6 +78,24 @@ inputs:
     inputBinding:
         prefix: --outdir
 
+  - id: "#q"
+    type: string
+    default: "0"
+    inputBinding:
+        prefix: -q
+
+  - id: "#L"
+    type: string
+    default: "F"
+    inputBinding:
+        prefix: -L
+
+  - id: "#G"
+    type: string
+    default: "F"
+    inputBinding:
+        prefix: -G
+
 outputs:
   - id: "#snp_out"
     type: File

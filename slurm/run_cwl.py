@@ -6,6 +6,7 @@ import postgres
 import setupLog
 import logging
 import tempfile
+import datetime
 
 def compress_output(workdir, logger):
     """ compress all files in a directory """
@@ -163,6 +164,9 @@ if __name__ == "__main__":
             "--username", args.username,
             "--password", args.password,
             "--snp", vcf_file,
+            "-q", "1",
+            "-G", "T",
+            "-L", "T"
             ]
 
     cwl_exit = pipelineUtil.run_command(cmd, logger)
@@ -200,9 +204,9 @@ if __name__ == "__main__":
     exit = upload_all_output(workdir, snp_location, logger, args.s3ceph)
 
     status, loc = update_postgres(exit, cwl_failure, vcf_upload_location, snp_location, logger)
-
+    timestamp = str(datetime.datetime.now())
     postgres.add_status(engine, args.case_id, str(vcf_uuid),
-                        [args.normal_id, args.tumor_id], status, loc)
+                        [args.normal_id, args.tumor_id], status, loc, timestamp)
 
     #remove work and input directories
     pipelineUtil.remove_dir(casedir)
