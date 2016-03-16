@@ -13,6 +13,7 @@ description: |
         --outdir        path to output directory
         --username      username for postgres database
         --password      password for postgres database
+        --hostname      hostname for postgres
 
 requirements:
   - import: node-engine.cwl
@@ -95,6 +96,13 @@ inputs:
     default: "F"
     inputBinding:
         prefix: -G
+
+
+  - id: "#host"
+    type: string
+    default: "pgreadwrite.osdc.io"
+    inputBinding:
+        prefix: --host
 
 outputs:
   - id: "#snp_out"

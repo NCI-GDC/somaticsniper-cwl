@@ -18,8 +18,9 @@ s3dir="s3://washu_sniper_variant/"
 access_key=$access_key
 secret_key=$secret_key
 host_base="XX_HOST_BASE_XX"
-
-wkdir=`mktemp -d -p /mnt/SCRATCH` 
+host="XX_host_XX"
+wkdir=`sudo mktemp -d ss.XXXXXXX -p /mnt/SCRATCH` 
+sudo chown ubuntu:ubuntu $wkdir
 cd $wkdir
 
 s3cfg=${wkdir}/s3cfg
@@ -31,5 +32,5 @@ echo "host_base=$host_base" >> $s3cfg
 sudo git clone -b feat/slurm $repository  
 sudo chown ubuntu:ubuntu somaticsniper-cwl 
 cwl=$wkdir/somaticsniper-cwl/tools/somaticsniper-tool.cwl.yaml
-/home/ubuntu/.virtualenvs/p2/bin/python $wkdir/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $basedir --cwl $cwl --s3dir $s3dir --s3ceph $s3cfg
+/home/ubuntu/.virtualenvs/p2/bin/python $wkdir/somaticsniper-cwl/slurm/run_cwl.py --ref $ref --refindex $refindex --normal $normal --tumor $tumor --normal_id $normal_id --tumor_id $tumor_id --case_id $case_id --username $username --password $password --basedir $wkdir --cwl $cwl --s3dir $s3dir --s3ceph $s3cfg --host $host
 sudo rm -rf $wkdir

@@ -102,6 +102,7 @@ if __name__ == "__main__":
     optional.add_argument("--basedir", default="/mnt/SCRATCH/", help="Base directory for computations")
     optional.add_argument("--s3clsafe", default="/home/ubuntu/.s3cfg.cleversafe", help="Config file for cleversafe")
     optional.add_argument("--s3ceph", default="/home/ubuntu/.s3cfg.ceph", help="Config file for ceph")
+    optional.add_argument("--host", default="pgreadwrite.osdc.io", help="hostname for postgres")
 
     args = parser.parse_args()
 
@@ -166,7 +167,8 @@ if __name__ == "__main__":
             "--snp", vcf_file,
             "-q", "1",
             "-G", "T",
-            "-L", "T"
+            "-L", "T",
+            "--host", args.host
             ]
 
     cwl_exit = pipelineUtil.run_command(cmd, logger)
@@ -175,7 +177,7 @@ if __name__ == "__main__":
 
     DATABASE = {
         'drivername': 'postgres',
-        'host' : 'pgreadwrite.osdc.io',
+        'host' : args.host,
         'port' : '5432',
         'username': args.username,
         'password' : args.password,
@@ -209,4 +211,4 @@ if __name__ == "__main__":
                         [args.normal_id, args.tumor_id], status, loc, timestamp)
 
     #remove work and input directories
-    pipelineUtil.remove_dir(casedir)
+    #pipelineUtil.remove_dir(casedir)
