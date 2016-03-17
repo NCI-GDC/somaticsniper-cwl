@@ -211,4 +211,4 @@ if __name__ == "__main__":
                         [args.normal_id, args.tumor_id], status, loc, timestamp)
 
     #remove work and input directories
-    #pipelineUtil.remove_dir(casedir)
+    pipelineUtil.remove_dir(casedir)
