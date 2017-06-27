@@ -13,47 +13,63 @@ requirements:
 inputs:
   - id: normal_input
     type: File
+    doc: normal input bam for samtools splitting
   - id: tumor_input
     type: File
+    doc: tumor input bam for samtools splitting
   - id: region
     type: string
+    doc: "chromosomes region for samtools splitting (e.g chr1:1-3000)"
   - id: reference
     type: File
+    doc: human reference genome
   - id: prefix
     type: string
+    doc: prefix for outputs
   - id: map_q
     type: string
     default: '0'
+    doc: filtering reads with mapping quality less than this value
   - id: base_q
     type: string
     default: '15'
+    doc: filtering somatic snv output with somatic quality less than this value
   - id: loh
     type: boolean
     default: false
+    doc: do not report LOH variants as determined by genotypes (T/F)
   - id: gor
     type: boolean
     default: false
+    doc: do not report Gain of Reference variants as determined by genotypes (T/F)
   - id: psc
     type: boolean
     default: false
+    doc: disable priors in the somatic calculation. Increases sensitivity for solid tumors (T/F)
   - id: ppa
     type: boolean
     default: false
+    doc: Use prior probabilities accounting for the somatic mutation rate (T/F)
   - id: pps
     type: string
     default: '0.01'
+    doc: prior probability of a somatic mutation (implies -J)
   - id: theta
     type: string
     default: '0.85'
+    doc: theta in maq consensus calling model (for -c/-g)
   - id: nhap
     type: string
     default: '2'
+    doc: number of haplotypes in the sample
   - id: pd
     type: string
     default: '0.001'
+    doc: prior of a difference between two haplotypes
   - id: fout
     type: string
     default: 'vcf'
+    doc: output format (classic/vcf/bed)
 
 outputs:
   - id: RAW_VCF
