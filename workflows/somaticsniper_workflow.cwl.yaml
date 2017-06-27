@@ -21,8 +21,39 @@ inputs:
     type: File
   - id: prefix
     type: string
+  - id: map_q
+    type: string
+    default: '0'
   - id: base_q
     type: string
+    default: '15'
+  - id: loh
+    type: boolean
+    default: false
+  - id: gor
+    type: boolean
+    default: false
+  - id: psc
+    type: boolean
+    default: false
+  - id: ppa
+    type: boolean
+    default: false
+  - id: pps
+    type: string
+    default: '0.01'
+  - id: theta
+    type: string
+    default: '0.85'
+  - id: nhap
+    type: string
+    default: '2'
+  - id: pd
+    type: string
+    default: '0.001'
+  - id: fout
+    type: string
+    default: 'vcf'
 
 outputs:
   - id: SOMATICSNIPER_LOG
@@ -72,7 +103,37 @@ steps:
   - id: somaticsniper_calling
     run: ../tools/somaticsniper_tool.cwl.yaml
     in:
-      - id:
+      - id: ref
+        source: reference
+      - id: map_q
+        source: map_q
+      - id: base_q
+        source: base_q
+      - id: loh
+        source: loh
+      - id: gor
+        source: gor
+      - id: psc
+        source: psc
+      - id: ppa
+        source: ppa
+      - id: pps
+        source: pps
+      - id: theta
+        source: theta
+      - id: nhap
+        source: nhap
+      - id: pd
+        source: pd
+      - id: fout
+        source: fout
+      - id: normal
+        source: samtools_workflow/normal_chunk
+      - id: tumor
+        source: samtools_workflow/tumor_chunk
+      - id: out
+        source: prefix
+        valueFrom: $(self + 'raw.vcf')
     out:
       - id: output
 
