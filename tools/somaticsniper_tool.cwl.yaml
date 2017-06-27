@@ -114,12 +114,16 @@ inputs:
     doc: input normal bam
     inputBinding:
       position: 13
+    secondaryFiles:
+      - '.bai'
 
   - id: tumor
     type: File
     doc: input tumor bam
     inputBinding:
       position: 14
+    secondaryFiles:
+      - '.bai'
 
   - id: out
     type: string
