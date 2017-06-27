@@ -8,7 +8,7 @@ requirements:
   - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
   - class: InitialWorkDirRequirement
     listing:
       - entry: $(inputs.vcf)
