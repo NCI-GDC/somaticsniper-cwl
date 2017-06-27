@@ -1,0 +1,6 @@
+{
+  "ref": {"class": "File", "path": "/mnt/reference/GRCh38.d1.vd1.fa"},
+  "normal": {"class": "File", "path": "/mnt/benchmark/input/normal.chunk1.bam"},
+  "tumor": {"class": "File", "path": "/mnt/benchmark/input/tumor.chunk1.bam"},
+  "out": "test.vcf"
+}

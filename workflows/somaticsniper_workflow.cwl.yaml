@@ -1,0 +1,100 @@
+#!/usr/bin/env cwl-runner
+
+cwlVersion: v1.0
+
+class: Workflow
+
+requirements:
+  - class: InlineJavascriptRequirement
+  - class: StepInputExpressionRequirement
+  - class: MultipleInputFeatureRequirement
+  - class: SubworkflowFeatureRequirement
+
+inputs:
+  - id: normal_input
+    type: File
+  - id: tumor_input
+    type: File
+  - id: region
+    type: string
+  - id: reference
+    type: File
+  - id: prefix
+    type: string
+  - id: base_q
+    type: string
+
+outputs:
+  - id: SOMATICSNIPER_LOG
+    type: File
+    outputSource: somaticsniper_calling/log
+  - id: RAW_VCF
+    type: File
+    outputSource: somaticsniper_calling/output
+  - id: POST_LOH_VCF
+    type: File
+    outputSource: filteration_workflow/POST_LOH_FILTER
+  - id: POST_FP_PASS_VCF
+    type: File
+    outputSource: filteration_workflow/POST_FP_FILTER_PASS
+  - id: POST_FP_FAIL_VCF
+    type: File
+    outputSource: filteration_workflow/POST_FP_FILTER_FAIL
+  - id: POST_HC_VCF
+    type: File
+    outputSource: filteration_workflow/POST_HC_FILTER
+  - id: SITE_LIST
+    type: File
+    outputSource: filteration_workflow/SITE_LIST
+  - id: READCOUNT
+    type: File
+    outputSource: filteration_workflow/READCOUNT
+
+steps:
+  - id: samtools_workflow
+    run: samtools_workflow.cwl.yaml
+    in:
+      - id: normal_input
+        source: normal_input
+      - id: tumor_input
+        source: tumor_input
+      - id: region
+        source: region
+      - id: reference
+        source: reference
+      - id: prefix
+        source: prefix
+    out:
+      - id: normal_chunk
+      - id: tumor_chunk
+      - id: chunk_mpileup
+
+  - id: somaticsniper_calling
+    run: ../tools/somaticsniper_tool.cwl.yaml
+    in:
+      - id:
+    out:
+      - id: output
+
+  - id: filteration_workflow
+    run: filteration_workflow.cwl.yaml
+    in:
+      - id: vcf
+        source: somaticsniper_calling/output
+      - id: pileup
+        source: samtools_workflow/chunk_mpileup
+      - id: base_q
+        source: base_q
+      - id: reference
+        source: reference
+      - id: tumor_bam
+        source: samtools_workflow/tumor_chunk
+      - id: prefix
+        source: prefix
+    out:
+      - id: POST_LOH_FILTER
+      - id: POST_FP_FILTER_PASS
+      - id: POST_FP_FILTER_FAIL
+      - id: POST_HC_FILTER
+      - id: SITE_LIST
+      - id: READCOUNT
