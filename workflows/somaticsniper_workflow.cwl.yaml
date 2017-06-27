@@ -56,9 +56,6 @@ inputs:
     default: 'vcf'
 
 outputs:
-  - id: SOMATICSNIPER_LOG
-    type: File
-    outputSource: somaticsniper_calling/log
   - id: RAW_VCF
     type: File
     outputSource: somaticsniper_calling/output
