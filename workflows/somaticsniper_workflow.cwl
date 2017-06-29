@@ -96,7 +96,7 @@ outputs:
 
 steps:
   - id: samtools_workflow
-    run: samtools_workflow.cwl.yaml
+    run: samtools_workflow.cwl
     in:
       - id: normal_input
         source: normal_input
@@ -114,7 +114,7 @@ steps:
       - id: chunk_mpileup
 
   - id: somaticsniper_calling
-    run: ../tools/somaticsniper_tool.cwl.yaml
+    run: ../tools/somaticsniper_tool.cwl
     in:
       - id: ref
         source: reference
@@ -151,7 +151,7 @@ steps:
       - id: output
 
   - id: filteration_workflow
-    run: filteration_workflow.cwl.yaml
+    run: filteration_workflow.cwl
     in:
       - id: vcf
         source: somaticsniper_calling/output

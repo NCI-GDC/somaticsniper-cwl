@@ -35,7 +35,7 @@ outputs:
 
 steps:
   - id: split
-    run: samtools_split_workflow.cwl.yaml
+    run: samtools_split_workflow.cwl
     in:
       - id: normal_input
         source: normal_input
@@ -50,7 +50,7 @@ steps:
       - id: tumor_chunk
 
   - id: mpileup_pair
-    run: ../tools/samtools_pileup.cwl.yaml
+    run: ../tools/samtools_pileup.cwl
     in:
       - id: ref
         source: reference

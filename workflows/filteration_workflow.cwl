@@ -45,7 +45,7 @@ outputs:
 
 steps:
   - id: loh_filter
-    run: ../tools/loh_filter.cwl.yaml
+    run: ../tools/loh_filter.cwl
     in:
       - id: vcf
         source: vcf
@@ -55,7 +55,7 @@ steps:
       - id: output
 
   - id: prepare_site_list
-    run: ../tools/prepare_site_list.cwl.yaml
+    run: ../tools/prepare_site_list.cwl
     in:
       - id: vcf
         source: loh_filter/output
@@ -63,7 +63,7 @@ steps:
       - id: output
 
   - id: bam_readcount
-    run: ../tools/bam_readcount.cwl.yaml
+    run: ../tools/bam_readcount.cwl
     in:
       - id: base_q
         source: base_q
@@ -80,7 +80,7 @@ steps:
       - id: output
 
   - id: fp_filter
-    run: ../tools/fp_filter.cwl.yaml
+    run: ../tools/fp_filter.cwl
     in:
       - id: vcf
         source: loh_filter/output
@@ -91,7 +91,7 @@ steps:
       - id: output_fail
 
   - id: highconfidence_filter
-    run: ../tools/highconfidence_filter.cwl.yaml
+    run: ../tools/highconfidence_filter.cwl
     in:
       - id: vcf
         source: fp_filter/output_pass

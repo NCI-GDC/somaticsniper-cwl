@@ -29,7 +29,7 @@ outputs:
 
 steps:
   - id: split_normal
-    run: ../tools/samtools_split.cwl.yaml
+    run: ../tools/samtools_split.cwl
     in:
       - id: input_bam_path
         source: normal_input
@@ -42,7 +42,7 @@ steps:
       - id: output_file
 
   - id: index_normal
-    run: ../tools/samtools_index.cwl.yaml
+    run: ../tools/samtools_index.cwl
     in:
       - id: input_bam_path
         source: split_normal/output_file
@@ -50,7 +50,7 @@ steps:
       - id: bam_with_index
 
   - id: split_tumor
-    run: ../tools/samtools_split.cwl.yaml
+    run: ../tools/samtools_split.cwl
     in:
       - id: input_bam_path
         source: tumor_input
@@ -63,7 +63,7 @@ steps:
       - id: output_file
 
   - id: index_tumor
-    run: ../tools/samtools_index.cwl.yaml
+    run: ../tools/samtools_index.cwl
     in:
       - id: input_bam_path
         source: split_tumor/output_file
