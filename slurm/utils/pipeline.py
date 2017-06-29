@@ -147,3 +147,7 @@ def targz_compress(logger, filename, dirname, cmd_prefix=['tar', '-cjvf']):
     exit_code = run_command(cmd, logger=logger)
 
     return exit_code
+
+def replace_last(s, old, new, occurrence):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
