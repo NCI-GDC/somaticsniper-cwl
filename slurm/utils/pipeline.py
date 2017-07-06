@@ -36,6 +36,36 @@ def multi_commands(cmds, thread_count, logger):
     output = pool.map(partial(do_pool_commands, logger=logger), cmds)
     return output
 
+def cmd_template(inputdir, workdir, cwl_path, input_json, output_id):
+    template = string.Template("/usr/bin/time -v /home/ubuntu/.virtualenvs/p2/bin/cwltool --tmpdir-prefix ${INP} --tmp-outdir-prefix ${WKD} ${CWL} ${IJ}")
+    for i in input_json:
+        cmd = template.substitute(dict(INP = inputdir,
+                                       WKD = workdir,
+                                       CWL = cwl_path,
+                                       IJ  = i)
+                                  )
+        yield cmd
+
+def run_command(cmd, logger=None, shell_var=False):
+    '''
+    Runs a subprocess
+    '''
+    child = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell_var)
+    stdoutdata, stderrdata = child.communicate()
+    exit_code = child.returncode
+
+    if logger is not None:
+        logger.info(cmd)
+        stdoutdata = stdoutdata.split("\n")
+        for line in stdoutdata:
+            logger.info(line)
+
+        stderrdata = stderrdata.split("\n")
+        for line in stderrdata:
+            logger.info(line)
+
+    return exit_code
+
 def setup_logging(level, log_name, log_filename):
     '''
     Sets up a logger
@@ -151,3 +181,34 @@ def targz_compress(logger, filename, dirname, cmd_prefix=['tar', '-cjvf']):
 def replace_last(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
+
+def annotate_filter(raw, post_filter, new):
+    filter_pass = '##FILTER=<ID=PASS,Description="Accept as a high confident somatic mutation">'
+    filter_reject = '##FILTER=<ID=REJECT,Description="Rejected as an unconfident somatic mutation">'
+    filter_loh = '##FILTER=<ID=LOH,Description="Rejected as a loss of heterozygosity">'
+    with open(raw, 'rb') as fin:
+        line = fin.readlines()
+        with open(post_filter, 'rb') as fcom:
+            comp = fcom.readlines()
+            hc = set(line).intersection(comp)
+            with open(new, 'w') as fout:
+                for i in line:
+                    if i.startswith('##fileformat'):
+                        fout.write(i)
+                        fout.write('{}\n'.format(filter_pass))
+                        fout.write('{}\n'.format(filter_reject))
+                        fout.write('{}\n'.format(filter_loh))
+                    elif i.startswith('#'):
+                        fout.write(i)
+                    elif i in hc:
+                        new = i.split('\t')
+                        new[6] = 'PASS'
+                        fout.write('\t'.join(new))
+                    elif i.split(':')[-2] == '3':
+                        new = i.split('\t')
+                        new[6] = 'LOH'
+                        fout.write('\t'.join(new))
+                    else:
+                        new = i.split('\t')
+                        new[6] = 'REJECT'
+                        fout.write('\t'.join(new))
