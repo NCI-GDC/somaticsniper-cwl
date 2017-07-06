@@ -78,21 +78,9 @@ outputs:
   - id: POST_LOH_VCF
     type: File
     outputSource: filteration_workflow/POST_LOH_FILTER
-  - id: POST_FP_PASS_VCF
-    type: File
-    outputSource: filteration_workflow/POST_FP_FILTER_PASS
-  - id: POST_FP_FAIL_VCF
-    type: File
-    outputSource: filteration_workflow/POST_FP_FILTER_FAIL
   - id: POST_HC_VCF
     type: File
     outputSource: filteration_workflow/POST_HC_FILTER
-  - id: SITE_LIST
-    type: File
-    outputSource: filteration_workflow/SITE_LIST
-  - id: READCOUNT
-    type: File
-    outputSource: filteration_workflow/READCOUNT
 
 steps:
   - id: samtools_workflow
@@ -157,18 +145,6 @@ steps:
         source: somaticsniper_calling/output
       - id: pileup
         source: samtools_workflow/chunk_mpileup
-      - id: base_q
-        source: base_q
-      - id: reference
-        source: reference
-      - id: tumor_bam
-        source: samtools_workflow/tumor_chunk
-      - id: prefix
-        source: prefix
     out:
       - id: POST_LOH_FILTER
-      - id: POST_FP_FILTER_PASS
-      - id: POST_FP_FILTER_FAIL
       - id: POST_HC_FILTER
-      - id: SITE_LIST
-      - id: READCOUNT
