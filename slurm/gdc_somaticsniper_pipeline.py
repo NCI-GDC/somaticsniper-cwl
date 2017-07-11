@@ -140,7 +140,7 @@ def run_pipeline(args, statusclass, metricsclass):
     # Create input json
     input_json_list = []
     for i, block in enumerate(utils.pipeline.fai_chunk(reference_fasta_fai, args.block)):
-        input_json_file = os.path.join(resultdir, '{0}.{4}.{1}.{2}.{3}.mutect.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
+        input_json_file = os.path.join(resultdir + 'workflow_input_json/', '{0}.{4}.{1}.{2}.{3}.mutect.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
         input_json_data = {
           "reference": {"class": "File", "path": reference_fasta_path},
           "normal_input": {"class": "File", "path": normal_bam},
