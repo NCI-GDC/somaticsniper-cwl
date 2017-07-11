@@ -2,7 +2,7 @@ import postgres.status
 import postgres.utils
 import argparse
 import os
-import utils.pipeline
+import utils.s3
 
 def is_nat(x):
     '''
@@ -33,12 +33,12 @@ if __name__ == "__main__":
 
     if not os.path.isfile(args.postgres_config):
         raise Exception("Cannot find config file: %s" % args.postgres_config)
-    upload_s3 = utils.pipeline.check_s3url(args.s3dir)
+    upload_s3 = utils.s3.check_s3url(args.s3dir)
     engine = postgres.utils.get_db_engine(args.postgres_config)
     cases = postgres.status.get_mutect_case(engine, str(args.input_table), str(args.status_table), input_primary_column=str(args.input_primary_id))
     for case in cases:
-        tumor_s3 = utils.pipeline.check_s3url(cases[case][3])
-        normal_s3 = utils.pipeline.check_s3url(cases[case][4])
+        tumor_s3 = utils.s3.check_s3url(cases[case][3])
+        normal_s3 = utils.s3.check_s3url(cases[case][4])
         slurm = open(os.path.join(args.outdir, "somaticsniper.{}.sh".format(cases[case][0])), "w")
         template = os.path.join(os.path.dirname(os.path.realpath(__file__)),
         "etc/template.sh")
