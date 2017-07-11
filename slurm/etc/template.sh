@@ -39,7 +39,7 @@ sudo chown ubuntu:ubuntu -R somaticsniper-cwl
 
 trap cleanup EXIT
 
-/home/ubuntu/.virtualenvs/p2/bin/python somaticsniper-cwl/slurm/gdc_mutect_pipeline.py \
+/home/ubuntu/.virtualenvs/p2/bin/python somaticsniper-cwl/slurm/gdc_somaticsniper_pipeline.py \
 --case_id $case_id \
 --tumor_gdc_id $tumor_gdc_id \
 --tumor_s3_url $tumor_s3_url \
