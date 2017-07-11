@@ -68,8 +68,30 @@ def run_pipeline(args, statusclass, metricsclass):
         raise Exception("Could not find path to base directory: %s" %args.basedir)
     # Generate a uuid
     output_id = str(uuid.uuid4())
-    output_vcf = output_id + ".vcf.gz"
-    # Get hostname
+    # Create sort json
+    raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
+    loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
+    hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
+    raw_path_list = []
+    loh_path_list = []
+    hc_path_list = []
+    for raw, loh, hc  in zip(raw_vcf_list, loh_vcf_list, hc_vcf_list):
+        raw_path = {"class": "File", "path": raw}
+        loh_path = {"class": "File", "path": loh}
+        hc_path = {"class": "File", "path": hc}
+        raw_path_list.append(raw_path)
+        loh_path_list.append(loh_path)
+        hc_path_list.append(hc_path)
+    raw_path_json = {"vcf_path": raw_path_list}
+    loh_path_json = {"vcf_path": loh_path_list}
+    hc_path_json = {"vcf_path": hc_path_list}
+    # Run Sort
+    cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
+           "--debug",
+           "--tmpdir-prefix", inputdir,
+           "--tmp-outdir-prefix", workdir,
+           args.sort,
+           input_json_file]    # Get hostname
     hostname = socket.gethostname()
     # Get datetime start
     datetime_start = str(datetime.datetime.now())
@@ -175,30 +197,16 @@ def run_pipeline(args, statusclass, metricsclass):
     cwl_failure = False
     if ss_cwl_exit:
         cwl_failure = True
-    # Run Sort
-    cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
-           "--debug",
-           "--tmpdir-prefix", inputdir,
-           "--tmp-outdir-prefix", workdir,
-           args.sort,
-           input_json_file]
-    ps_cwl_exit = utils.pipeline.run_command(cmd, logger)
-    ps_cwl_exit = False
-    if ps_cwl_exit:
-        cwl_failure = True
     # Compress the outputs and CWL logs
     os.chdir(jobdir)
     output_tar = os.path.join(resultdir, "%s.%s.tar.bz2" % ("somaticsniper", str(output_id)))
     logger.info("Compressing workflow outputs: %s" % (output_tar))
     utils.pipeline.targz_compress(logger, output_tar, os.path.basename(workdir), cmd_prefix=['tar', '-cjvf'])
-    output_vcf_path = os.path.join(resultdir, output_vcf)
-    os.rename(os.path.join(workdir, output_vcf), output_vcf_path)
-    os.rename(os.path.join(workdir, output_vcf + ".tbi"), os.path.join(resultdir, output_vcf + ".tbi"))
     upload_dir_location = os.path.join(args.s3dir, str(output_id))
-    upload_file_location = os.path.join(upload_dir_location, output_vcf)
+    upload_file_location = os.path.join(upload_dir_location, output_tar)
     # Get md5 and file size
-    md5 = utils.pipeline.get_md5(output_vcf_path)
-    file_size = utils.pipeline.get_file_size(output_vcf_path)
+    md5 = utils.pipeline.get_md5(output_tar)
+    file_size = utils.pipeline.get_file_size(output_tar)
     # Upload output
     upload_start = time.time()
     logger.info("Uploading workflow output to %s" % (upload_file_location))
@@ -225,11 +233,11 @@ def run_pipeline(args, statusclass, metricsclass):
     logger.info("Updating metrics")
     postgres.utils.add_pipeline_metrics(engine, args.case_id, args.tumor_gdc_id, args.normal_gdc_id, download_time,
                                         upload_time, str(args.thread_count), cwl_elapsed,
-                                        time_metrics['system_time'],
-                                        time_metrics['user_time'],
-                                        time_metrics['wall_clock'],
-                                        time_metrics['percent_of_cpu'],
-                                        time_metrics['maximum_resident_set_size'],
+                                        sum(time_metrics['system_time']),
+                                        sum(time_metrics['user_time']),
+                                        sum(time_metrics['wall_clock']),
+                                        sum(time_metrics['percent_of_cpu']),
+                                        sum(time_metrics['maximum_resident_set_size']),
                                         status, metricsclass)
     # Remove job directories, upload final log file
     logger.info("Uploading main log file")
