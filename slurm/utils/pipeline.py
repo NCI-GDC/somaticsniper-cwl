@@ -133,12 +133,12 @@ def get_time_metrics(time_file):
                         minutes = int(value.split(':')[1])
                         seconds = float(value.split(':')[2])
                         total_seconds = (hours * 60 * 60) + (minutes * 60) + seconds
-                        time_metrics['wall_clock'].append(total_seconds)
+                        time_metrics['wall_clock'].append(int(total_seconds))
                     if value.count(':') == 1:
                         minutes = int(value.split(':')[0])
                         seconds = float(value.split(':')[1])
                         total_seconds = (minutes * 60) + seconds
-                        time_metrics['wall_clock'].append(total_seconds)
+                        time_metrics['wall_clock'].append(int(total_seconds))
                 if ('Maximum resident set size (kbytes):') in line:
                     time_metrics['maximum_resident_set_size'].append(int(line.split(':')[4].strip()))
     except: pass

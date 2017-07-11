@@ -37,7 +37,7 @@ class MetricsTypeMixin(object):
     whole_workflow_elapsed             = Column(String)
     avg_cwl_systime                   = Column(Float)
     avg_cwl_usertime                  = Column(Float)
-    avg_cwl_walltime                  = Column(String)
+    avg_cwl_walltime                  = Column(Float)
     avg_cwl_percent_of_cpu            = Column(Float)
     avg_cwl_maximum_resident_set_size = Column(Float)
     status                             = Column(String)
