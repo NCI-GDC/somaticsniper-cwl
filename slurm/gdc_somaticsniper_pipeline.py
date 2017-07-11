@@ -13,7 +13,6 @@ import utils.pipeline
 import datetime
 import socket
 import json
-import string
 import postgres.status
 import postgres.utils
 import postgres.mixins

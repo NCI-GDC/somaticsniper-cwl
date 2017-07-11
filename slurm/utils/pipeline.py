@@ -7,6 +7,7 @@ import hashlib
 import gzip
 import json
 import io
+import string
 from multiprocessing.dummy import Pool, Lock
 from itertools import islice
 
