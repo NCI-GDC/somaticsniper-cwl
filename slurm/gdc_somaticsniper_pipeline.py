@@ -50,7 +50,6 @@ def get_args():
     required.add_argument("--basedir", default="/mnt/SCRATCH/", help="Base directory for computations.")
     required.add_argument("--refdir", required=True, help="Path to reference directory.")
     required.add_argument("--cwl", required=True, help="Path to CWL workflow.")
-    required.add_argument("--sort", required=True, help="Path to sortvcf cwl tool.")
     required.add_argument("--s3dir", default="s3://", help="S3bin for uploading output files.")
     required.add_argument("--s3_profile", required=True, help="S3 profile name for project tenant.")
     required.add_argument("--s3_endpoint", required=True, help="S3 endpoint url for project tenant.")
@@ -68,30 +67,6 @@ def run_pipeline(args, statusclass, metricsclass):
         raise Exception("Could not find path to base directory: %s" %args.basedir)
     # Generate a uuid
     output_id = str(uuid.uuid4())
-    # Create sort json
-    raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
-    loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
-    hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
-    raw_path_list = []
-    loh_path_list = []
-    hc_path_list = []
-    for raw, loh, hc  in zip(raw_vcf_list, loh_vcf_list, hc_vcf_list):
-        raw_path = {"class": "File", "path": raw}
-        loh_path = {"class": "File", "path": loh}
-        hc_path = {"class": "File", "path": hc}
-        raw_path_list.append(raw_path)
-        loh_path_list.append(loh_path)
-        hc_path_list.append(hc_path)
-    raw_path_json = {"vcf_path": raw_path_list}
-    loh_path_json = {"vcf_path": loh_path_list}
-    hc_path_json = {"vcf_path": hc_path_list}
-    # Run Sort
-    cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
-           "--debug",
-           "--tmpdir-prefix", inputdir,
-           "--tmp-outdir-prefix", workdir,
-           args.sort,
-           input_json_file]    # Get hostname
     hostname = socket.gethostname()
     # Get datetime start
     datetime_start = str(datetime.datetime.now())
