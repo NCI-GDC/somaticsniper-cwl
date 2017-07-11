@@ -86,9 +86,9 @@ def add_pipeline_status(engine, case_id, tumor_gdc_id, normal_gdc_id, output_id,
     add_metrics(engine, met)
 
 def add_pipeline_metrics(engine, case_id, tumor_gdc_id, normal_gdc_id, download_time,
-                         upload_time, thread_count, whole_workflow_elapsed, main_cwl_systime,
-                         main_cwl_usertime, main_cwl_walltime, main_cwl_percent_of_cpu,
-                         main_cwl_maximum_resident_set_size, status, metricsclass):
+                         upload_time, thread_count, whole_workflow_elapsed, avg_cwl_systime,
+                         avg_cwl_usertime, avg_cwl_walltime, avg_cwl_percent_of_cpu,
+                         avg_cwl_maximum_resident_set_size, status, metricsclass):
     """ add provided metrics to database """
     met = metricsclass(case_id                              = case_id,
                        tumor_gdc_id                         = tumor_gdc_id,
@@ -97,11 +97,11 @@ def add_pipeline_metrics(engine, case_id, tumor_gdc_id, normal_gdc_id, download_
                        upload_time                          = upload_time,
                        thread_count                         = thread_count,
                        whole_workflow_elapsed               = whole_workflow_elapsed,
-                       main_cwl_systime                     = main_cwl_systime,
-                       main_cwl_usertime                    = main_cwl_usertime,
-                       main_cwl_walltime                    = main_cwl_walltime,
-                       main_cwl_percent_of_cpu              = main_cwl_percent_of_cpu,
-                       main_cwl_maximum_resident_set_size   = main_cwl_maximum_resident_set_size,
+                       avg_cwl_systime                     = avg_cwl_systime,
+                       avg_cwl_usertime                    = avg_cwl_usertime,
+                       avg_cwl_walltime                    = avg_cwl_walltime,
+                       avg_cwl_percent_of_cpu              = avg_cwl_percent_of_cpu,
+                       avg_cwl_maximum_resident_set_size   = avg_cwl_maximum_resident_set_size,
                        status                               = status)
     create_table(engine, met)
     add_metrics(engine, met)
