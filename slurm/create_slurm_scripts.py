@@ -35,7 +35,7 @@ if __name__ == "__main__":
         raise Exception("Cannot find config file: %s" % args.postgres_config)
     upload_s3 = utils.s3.check_s3url(args.s3dir)
     engine = postgres.utils.get_db_engine(args.postgres_config)
-    cases = postgres.status.get_mutect_case(engine, str(args.input_table), str(args.status_table), input_primary_column=str(args.input_primary_id))
+    cases = postgres.status.get_case(engine, str(args.input_table), str(args.status_table), input_primary_column=str(args.input_primary_id))
     for case in cases:
         tumor_s3 = utils.s3.check_s3url(cases[case][3])
         normal_s3 = utils.s3.check_s3url(cases[case][4])
