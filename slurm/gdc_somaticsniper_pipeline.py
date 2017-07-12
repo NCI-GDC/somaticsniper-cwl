@@ -171,18 +171,12 @@ def run_pipeline(args, statusclass, metricsclass):
     cmds = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.cwl, input_json = input_json_list, output_id = output_id))
     cwl_exit = utils.pipeline.multi_commands(cmds, args.thread_count, logger)
     # Create sort json
-    sort_json_data = {
-        "host": "pgreadwrite.osdc.io",
-        "reference_fasta_dict": {"class": "File", "path": reference_fasta_dict},
-        "case_id": args.case_id,
-        "postgres_config": {"class": "File", "path": postgres_config}
-    }
     raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
     loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
     hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
-    raw_sort_json = utils.pipeline.create_sort_json(str(output_id), "raw", jsondir, workdir, raw_vcf_list, sort_json_data, logger)
-    loh_sort_json = utils.pipeline.create_sort_json(str(output_id), "loh", jsondir, workdir, loh_vcf_list, sort_json_data, logger)
-    hc_sort_json = utils.pipeline.create_sort_json(str(output_id), "hc", jsondir, workdir, hc_vcf_list, sort_json_data, logger)
+    raw_sort_json = utils.pipeline.create_sort_json(str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
+    loh_sort_json = utils.pipeline.create_sort_json(str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
+    hc_sort_json = utils.pipeline.create_sort_json(str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
     # Run Sort
     raw_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                "--debug",
@@ -214,7 +208,7 @@ def run_pipeline(args, statusclass, metricsclass):
     new_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "annotated"))
     utils.pipeline.annotate_filter(raw_vcf, hc_vcf, new_vcf)
     # Run sort again on annotated VCF
-    final_sort_json = utils.pipeline.create_sort_json(str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], sort_json_data, logger)
+    final_sort_json = utils.pipeline.create_sort_json(str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], logger)
     final_sort_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                       "--debug",
                       "--tmpdir-prefix", inputdir,
