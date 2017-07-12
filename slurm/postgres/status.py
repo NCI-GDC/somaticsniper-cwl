@@ -13,20 +13,20 @@ def get_status(upload_exit, cwl_exit, upload_file_location, upload_dir_location,
     status = 'UNKNOWN'
     if upload_exit == 0:
         loc = upload_file_location
-        if cwl_exit == 0:
-            status = 'COMPLETED'
-            logger.info("uploaded all files to object store. The path is: %s" % upload_dir_location)
-        else:
+        if any(x != 0 for x in cwl_exit):
             status = 'CWL_FAILED'
             logger.info("CWL failed. The log path is: %s" % upload_dir_location)
+        else:
+            status = 'COMPLETED'
+            logger.info("uploaded all files to object store. The path is: %s" % upload_dir_location)
     else:
         loc = 'Not Applicable'
-        if cwl_exit == 0:
-            status = 'UPLOAD_FAILURE'
-            logger.info("Upload of files failed")
-        else:
+        if any(x != 0 for x in cwl_exit):
             status = 'FAILED'
             logger.info("CWL and upload both failed")
+        else:
+            status = 'UPLOAD_FAILURE'
+            logger.info("Upload of files failed")
     return(status, loc)
 
 class State(object):
