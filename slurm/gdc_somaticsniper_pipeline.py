@@ -139,9 +139,8 @@ def run_pipeline(args, statusclass, metricsclass):
     tumor_bam_index = utils.pipeline.get_index(logger, inputdir, tumor_bam)
     # Create input json
     input_json_list = []
-    input_json_dir = os.mkdir(os.path.join(resultdir, 'workflow_input_json'))
     for i, block in enumerate(utils.pipeline.fai_chunk(reference_fasta_fai, args.block)):
-        input_json_file = os.path.join(input_json_dir, '{0}.{4}.{1}.{2}.{3}.mutect.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
+        input_json_file = os.path.join(resultdir, '{0}.{4}.{1}.{2}.{3}.mutect.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
         input_json_data = {
           "reference": {"class": "File", "path": reference_fasta_path},
           "normal_input": {"class": "File", "path": normal_bam},
