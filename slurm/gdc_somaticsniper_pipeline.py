@@ -212,9 +212,9 @@ def run_pipeline(args, statusclass, metricsclass):
     raw_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "raw"))
     hc_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "hc"))
     new_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "annotated"))
-    annotate_filter(raw_vcf, hc_vcf, new_vcf)
+    utils.pipeline.annotate_filter(raw_vcf, hc_vcf, new_vcf)
     # Run sort again on annotated VCF
-    final_sort_json = create_sort_json(str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], sort_json_data, logger)
+    final_sort_json = utils.pipeline.create_sort_json(str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], sort_json_data, logger)
     final_sort_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                       "--debug",
                       "--tmpdir-prefix", inputdir,
