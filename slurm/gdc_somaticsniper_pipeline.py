@@ -190,22 +190,22 @@ def run_pipeline(args, statusclass, metricsclass):
                "--tmp-outdir-prefix", workdir,
                args.sort,
                raw_sort_json]
+    raw_exit = utils.pipeline.run_command(raw_cmd, logger)
+    cwl_exit.append(raw_exit)
     loh_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                "--debug",
                "--tmpdir-prefix", inputdir,
                "--tmp-outdir-prefix", workdir,
                args.sort,
                loh_sort_json]
+    loh_exit = utils.pipeline.run_command(loh_cmd, logger)
+    cwl_exit.append(loh_exit)
     hc_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                "--debug",
                "--tmpdir-prefix", inputdir,
                "--tmp-outdir-prefix", workdir,
                args.sort,
                hc_sort_json]
-    raw_exit = utils.pipeline.run_command(raw_cmd, logger)
-    cwl_exit.append(raw_exit)
-    loh_exit = utils.pipeline.run_command(loh_cmd, logger)
-    cwl_exit.append(loh_exit)
     hc_exit = utils.pipeline.run_command(hc_cmd, logger)
     cwl_exit.append(hc_exit)
     # Annotate filters back to original VCF
