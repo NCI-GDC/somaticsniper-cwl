@@ -180,9 +180,9 @@ def run_pipeline(args, statusclass, metricsclass):
     raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
     loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
     hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
-    raw_sort_json = create_sort_json(str(output_id), "raw", jsondir, workdir, raw_vcf_list, sort_json_data, logger)
-    loh_sort_json = create_sort_json(str(output_id), "loh", jsondir, workdir, loh_vcf_list, sort_json_data, logger)
-    hc_sort_json = create_sort_json(str(output_id), "hc", jsondir, workdir, hc_vcf_list, sort_json_data, logger)
+    raw_sort_json = utils.pipeline.create_sort_json(str(output_id), "raw", jsondir, workdir, raw_vcf_list, sort_json_data, logger)
+    loh_sort_json = utils.pipeline.create_sort_json(str(output_id), "loh", jsondir, workdir, loh_vcf_list, sort_json_data, logger)
+    hc_sort_json = utils.pipeline.create_sort_json(str(output_id), "hc", jsondir, workdir, hc_vcf_list, sort_json_data, logger)
     # Run Sort
     raw_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                "--debug",
