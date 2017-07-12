@@ -184,13 +184,26 @@ def replace_last(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
+def create_sort_json(jid, jtag, jdir, indir, inlist, base, logger):
+    path_list = []
+    json_path = os.path.join(jdir, '{0}.picard_sort.{1}.inputs.json'.format(str(jid), jtag))
+    for vcf in inlist:
+        path = {"class": "File", "path": vcf}
+        path_list.append(path)
+    path_json = {"vcf_path": path_list, "output_vcf": "{0}.{1}.vcf.gz".format(str(jid), jtag)}
+    json_data = base.update(path_json)
+    with open(json_path, 'wt') as o:
+        json.dump(json_path, o, indent=4)
+    logger.info("Prepared picard sort {} input json".format(jtag))
+    return json_path
+
 def annotate_filter(raw, post_filter, new):
     filter_pass = '##FILTER=<ID=PASS,Description="Accept as a high confident somatic mutation">'
     filter_reject = '##FILTER=<ID=REJECT,Description="Rejected as an unconfident somatic mutation">'
     filter_loh = '##FILTER=<ID=LOH,Description="Rejected as a loss of heterozygosity">'
-    with open(raw, 'rb') as fin:
+    with gzip.open(raw, 'rb') as fin:
         line = fin.readlines()
-        with open(post_filter, 'rb') as fcom:
+        with gzip.open(post_filter, 'rb') as fcom:
             comp = fcom.readlines()
             hc = set(line).intersection(comp)
             with open(new, 'w') as fout:
