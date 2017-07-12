@@ -184,13 +184,13 @@ def replace_last(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
-def create_sort_json(jid, jtag, jdir, indir, inlist, logger):
+def create_sort_json(case_id, ref_dict, pg_config, jid, jtag, jdir, indir, inlist, logger):
     path_list = []
     sort_json_data = {
         "host": "pgreadwrite.osdc.io",
-        "reference_fasta_dict": {"class": "File", "path": reference_fasta_dict},
-        "case_id": args.case_id,
-        "postgres_config": {"class": "File", "path": postgres_config}
+        "reference_fasta_dict": {"class": "File", "path": ref_dict},
+        "case_id": case_id,
+        "postgres_config": {"class": "File", "path": pg_config}
     }
     json_path = os.path.join(jdir, '{0}.picard_sort.{1}.inputs.json'.format(jid, jtag))
     for vcf in inlist:
