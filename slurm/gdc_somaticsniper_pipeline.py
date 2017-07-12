@@ -171,9 +171,9 @@ def run_pipeline(args, statusclass, metricsclass):
     cmds = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.cwl, input_json = input_json_list, output_id = output_id))
     cwl_exit = utils.pipeline.multi_commands(cmds, args.thread_count, logger)
     # Create sort json
-    raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
-    loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
-    hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
+    raw_vcf_list = glob.glob("*.raw.vcf")
+    loh_vcf_list = glob.glob("*.raw.vcf.SNPfilter")
+    hc_vcf_list = glob.glob("*.raw.vcf.SNPfilter.hc")
     raw_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
     loh_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
     hc_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
