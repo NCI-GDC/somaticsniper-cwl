@@ -184,14 +184,20 @@ def replace_last(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
-def create_sort_json(jid, jtag, jdir, indir, inlist, base, logger):
+def create_sort_json(jid, jtag, jdir, indir, inlist, logger):
     path_list = []
-    json_path = os.path.join(jdir, '{0}.picard_sort.{1}.inputs.json'.format(str(jid), jtag))
+    sort_json_data = {
+        "host": "pgreadwrite.osdc.io",
+        "reference_fasta_dict": {"class": "File", "path": reference_fasta_dict},
+        "case_id": args.case_id,
+        "postgres_config": {"class": "File", "path": postgres_config}
+    }
+    json_path = os.path.join(jdir, '{0}.picard_sort.{1}.inputs.json'.format(jid, jtag))
     for vcf in inlist:
         path = {"class": "File", "path": vcf}
         path_list.append(path)
-    path_json = {"vcf_path": path_list, "output_vcf": "{0}.{1}.vcf.gz".format(str(jid), jtag)}
-    json_data = base.update(path_json)
+    path_json = {"vcf_path": path_list, "output_vcf": "{0}.{1}.vcf.gz".format(jid, jtag)}
+    json_data = sort_json_data.update(path_json)
     with open(json_path, 'wt') as o:
         json.dump(json_data, o, indent=4)
     logger.info("Prepared picard sort {} input json".format(jtag))
