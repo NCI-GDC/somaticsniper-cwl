@@ -49,6 +49,7 @@ def get_args():
     required.add_argument("--basedir", default="/mnt/SCRATCH/", help="Base directory for computations.")
     required.add_argument("--refdir", required=True, help="Path to reference directory.")
     required.add_argument("--cwl", required=True, help="Path to CWL workflow.")
+    required.add_argument("--sort", required=True, help="Path to Picard sortvcf CWL tool.")
     required.add_argument("--s3dir", default="s3://", help="S3bin for uploading output files.")
     required.add_argument("--s3_profile", required=True, help="S3 profile name for project tenant.")
     required.add_argument("--s3_endpoint", required=True, help="S3 endpoint url for project tenant.")
@@ -74,6 +75,7 @@ def run_pipeline(args, statusclass, metricsclass):
     workdir = tempfile.mkdtemp(prefix="workdir_", dir=jobdir)
     inputdir = tempfile.mkdtemp(prefix="input_", dir=jobdir)
     resultdir = tempfile.mkdtemp(prefix="result_", dir=jobdir)
+    jsondir = tempfile.mkdtemp(prefix="input_json_", dir=workdir)
     refdir = args.refdir
     # Setup logger
     log_file = os.path.join(resultdir, "{0}.{1}.cwl.log".format("somaticsniper", str(output_id)))
@@ -140,7 +142,7 @@ def run_pipeline(args, statusclass, metricsclass):
     # Create input json
     input_json_list = []
     for i, block in enumerate(utils.pipeline.fai_chunk(reference_fasta_fai, args.block)):
-        input_json_file = os.path.join(resultdir, '{0}.{4}.{1}.{2}.{3}.mutect.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
+        input_json_file = os.path.join(jsondir, '{0}.{4}.{1}.{2}.{3}.somaticsniper.inputs.json'.format(str(output_id), block[0], block[1], block[2], i))
         input_json_data = {
           "reference": {"class": "File", "path": reference_fasta_path},
           "normal_input": {"class": "File", "path": normal_bam},
@@ -167,20 +169,74 @@ def run_pipeline(args, statusclass, metricsclass):
     os.chdir(workdir)
     logger.info('Running CWL workflow')
     cmds = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.cwl, input_json = input_json_list, output_id = output_id))
-    ss_cwl_exit = utils.pipeline.multi_commands(cmds, args.thread_count, logger)
-    cwl_failure = False
-    if ss_cwl_exit:
-        cwl_failure = True
+    cwl_exit = utils.pipeline.multi_commands(cmds, args.thread_count, logger)
+    # Create sort json
+    sort_json_data = {
+        "host": "pgreadwrite.osdc.io",
+        "reference_fasta_dict": {"class": "File", "path": reference_fasta_dict},
+        "case_id": args.case_id,
+        "postgres_config": {"class": "File", "path": postgres_config}
+    }
+    raw_vcf_list = glob.glob(workdir + "*.raw.vcf")
+    loh_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter")
+    hc_vcf_list = glob.glob(workdir + "*.raw.vcf.SNPfilter.hc")
+    raw_sort_json = create_sort_json(str(output_id), "raw", jsondir, workdir, raw_vcf_list, sort_json_data, logger)
+    loh_sort_json = create_sort_json(str(output_id), "loh", jsondir, workdir, loh_vcf_list, sort_json_data, logger)
+    hc_sort_json = create_sort_json(str(output_id), "hc", jsondir, workdir, hc_vcf_list, sort_json_data, logger)
+    # Run Sort
+    raw_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
+               "--debug",
+               "--tmpdir-prefix", inputdir,
+               "--tmp-outdir-prefix", workdir,
+               args.sort,
+               raw_sort_json]
+    loh_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
+               "--debug",
+               "--tmpdir-prefix", inputdir,
+               "--tmp-outdir-prefix", workdir,
+               args.sort,
+               loh_sort_json]
+    hc_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
+               "--debug",
+               "--tmpdir-prefix", inputdir,
+               "--tmp-outdir-prefix", workdir,
+               args.sort,
+               hc_sort_json]
+    raw_exit = utils.pipeline.run_command(raw_cmd, logger)
+    cwl_exit.append(raw_exit)
+    loh_exit = utils.pipeline.run_command(loh_cmd, logger)
+    cwl_exit.append(loh_exit)
+    hc_exit = utils.pipeline.run_command(hc_cmd, logger)
+    cwl_exit.append(hc_exit)
+    # Annotate filters back to original VCF
+    raw_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "raw"))
+    hc_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "hc"))
+    new_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "annotated"))
+    annotate_filter(raw_vcf, hc_vcf, new_vcf)
+    # Run sort again on annotated VCF
+    final_sort_json = create_sort_json(str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], sort_json_data, logger)
+    final_sort_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
+                      "--debug",
+                      "--tmpdir-prefix", inputdir,
+                      "--tmp-outdir-prefix", workdir,
+                      args.sort,
+                      final_sort_json]
+    final_exit = utils.pipeline.run_command(final_sort_cmd, logger)
+    cwl_exit.append(final_exit)
     # Compress the outputs and CWL logs
     os.chdir(jobdir)
+    output_vcf = "{0}.{1}.vcf.gz".format(str(output_id), "annotated_sorted"))
     output_tar = os.path.join(resultdir, "%s.%s.tar.bz2" % ("somaticsniper", str(output_id)))
     logger.info("Compressing workflow outputs: %s" % (output_tar))
     utils.pipeline.targz_compress(logger, output_tar, os.path.basename(workdir), cmd_prefix=['tar', '-cjvf'])
+    output_vcf_path = os.path.join(resultdir, output_vcf)
+    os.rename(os.path.join(workdir, output_vcf), output_vcf_path)
+    os.rename(os.path.join(workdir, output_vcf + ".tbi"), os.path.join(resultdir, output_vcf + ".tbi"))
     upload_dir_location = os.path.join(args.s3dir, str(output_id))
-    upload_file_location = os.path.join(upload_dir_location, output_tar)
+    upload_file_location = os.path.join(upload_dir_location, output_vcf)
     # Get md5 and file size
-    md5 = utils.pipeline.get_md5(output_tar)
-    file_size = utils.pipeline.get_file_size(output_tar)
+    md5 = utils.pipeline.get_md5(output_vcf_path)
+    file_size = utils.pipeline.get_file_size(output_vcf_path)
     # Upload output
     upload_start = time.time()
     logger.info("Uploading workflow output to %s" % (upload_file_location))
