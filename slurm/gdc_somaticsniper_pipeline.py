@@ -225,7 +225,7 @@ def run_pipeline(args, statusclass, metricsclass):
     cwl_exit.append(final_exit)
     # Compress the outputs and CWL logs
     os.chdir(jobdir)
-    output_vcf = "{0}.{1}.vcf.gz".format(str(output_id), "annotated_sorted"))
+    output_vcf = "{0}.{1}.vcf.gz".format(str(output_id), "annotated_sorted")
     output_tar = os.path.join(resultdir, "%s.%s.tar.bz2" % ("somaticsniper", str(output_id)))
     logger.info("Compressing workflow outputs: %s" % (output_tar))
     utils.pipeline.targz_compress(logger, output_tar, os.path.basename(workdir), cmd_prefix=['tar', '-cjvf'])
