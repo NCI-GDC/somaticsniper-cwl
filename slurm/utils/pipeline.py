@@ -8,6 +8,7 @@ import gzip
 import json
 import io
 import string
+from functools import partial
 from multiprocessing.dummy import Pool, Lock
 from itertools import islice
 
