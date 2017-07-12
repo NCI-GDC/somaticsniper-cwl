@@ -193,7 +193,7 @@ def create_sort_json(jid, jtag, jdir, indir, inlist, base, logger):
     path_json = {"vcf_path": path_list, "output_vcf": "{0}.{1}.vcf.gz".format(str(jid), jtag)}
     json_data = base.update(path_json)
     with open(json_path, 'wt') as o:
-        json.dump(json_path, o, indent=4)
+        json.dump(path_json, o, indent=4)
     logger.info("Prepared picard sort {} input json".format(jtag))
     return json_path
 
