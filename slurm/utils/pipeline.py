@@ -122,13 +122,13 @@ def get_time_metrics(time_file):
             for line in fh:
                 line = line.strip()
                 if 'User time (seconds):' in line:
-                    time_metrics['user_time'].append(float(line.split(':')[4].strip()))
+                    time_metrics['user_time'].append(float(line.split(':')[-1].strip()))
                 if 'System time (seconds):' in line:
-                    time_metrics['system_time'].append(float(line.split(':')[4].strip()))
+                    time_metrics['system_time'].append(float(line.split(':')[-1].strip()))
                 if 'Percent of CPU this job got:' in line:
-                    time_metrics['percent_of_cpu'].append(int(line.split(':')[4].strip().rstrip('%')))
+                    time_metrics['percent_of_cpu'].append(int(line.split(':')[-1].strip().rstrip('%')))
                 if 'Elapsed (wall clock) time (h:mm:ss or m:ss):' in line:
-                    value = ":".join(line.split(":")[7:])
+                    value = ":".join(line.split(":")[4:])
                     #hour case
                     if value.count(':') == 2:
                         hours = int(value.split(':')[0])
@@ -142,7 +142,7 @@ def get_time_metrics(time_file):
                         total_seconds = (minutes * 60) + seconds
                         time_metrics['wall_clock'].append(int(total_seconds))
                 if ('Maximum resident set size (kbytes):') in line:
-                    time_metrics['maximum_resident_set_size'].append(int(line.split(':')[4].strip()))
+                    time_metrics['maximum_resident_set_size'].append(int(line.split(':')[-1].strip()))
     except: pass
 
     return time_metrics
