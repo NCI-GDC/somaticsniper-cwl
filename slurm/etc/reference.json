@@ -14,6 +14,6 @@
   "pd": "0.001",
   "fout": "vcf",
   "pg_config": "postgres_config",
-  "cwl_version": "1.0.20170224141733",
+  "cwl_version": "1.0.20170707200431",
   "docker_version": ["quay.io/ncigdc/somaticsniper-tool:1.0", "quay.io/ncigdc/samtools:9bbccff355bf", "quay.io/shenglai/picard-sortvcf-tool:1.0a"]
 }
