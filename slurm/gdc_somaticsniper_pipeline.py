@@ -205,7 +205,7 @@ def run_pipeline(args, statusclass, metricsclass):
     # Annotate filters back to original VCF
     raw_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "raw"))
     hc_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "hc"))
-    new_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "annotated"))
+    new_vcf = os.path.join(workdir, "{0}.{1}.vcf".format(str(output_id), "annotated"))
     utils.pipeline.annotate_filter(raw_vcf, hc_vcf, new_vcf)
     # Run sort again on annotated VCF
     final_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], logger)
