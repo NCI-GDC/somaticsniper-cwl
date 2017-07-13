@@ -257,11 +257,11 @@ def run_pipeline(args, statusclass, metricsclass):
     logger.info("Updating metrics")
     postgres.utils.add_pipeline_metrics(engine, args.case_id, args.tumor_gdc_id, args.normal_gdc_id, download_time,
                                         upload_time, str(args.thread_count), cwl_elapsed,
-                                        sum(time_metrics['system_time'])/float(args.thread_count),
-                                        sum(time_metrics['user_time'])/float(args.thread_count),
-                                        sum(time_metrics['wall_clock'])/float(args.thread_count),
-                                        sum(time_metrics['percent_of_cpu'])/float(args.thread_count),
-                                        sum(time_metrics['maximum_resident_set_size'])/float(args.thread_count),
+                                        sum(time_metrics['system_time'])/float(len(time_metrics['system_time'])),
+                                        sum(time_metrics['user_time'])/float(len(time_metrics['user_time'])),
+                                        sum(time_metrics['wall_clock'])/float(len(time_metrics['wall_clock'])),
+                                        sum(time_metrics['percent_of_cpu'])/float(len(time_metrics['percent_of_cpu'])),
+                                        sum(time_metrics['maximum_resident_set_size'])/float(len(time_metrics['maximum_resident_set_size'])),
                                         status, metricsclass)
     # Remove job directories, upload final log file
     logger.info("Uploading main log file")
