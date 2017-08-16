@@ -53,8 +53,6 @@ inputs:
         separate: false
     inputBinding:
       position: 7
-    secondaryFiles:
-      - ".tbi"
 
 outputs:
   - id: sorted_output_vcf
