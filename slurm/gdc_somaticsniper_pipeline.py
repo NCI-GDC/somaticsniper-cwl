@@ -114,21 +114,20 @@ def run_pipeline(args, statusclass, metricsclass):
     logger.info("docker_version: {}".format(docker_version))
     # Download input
     normal_bam = os.path.join(inputdir, os.path.basename(args.normal_s3_url))
-    normal_download_exit_code = utils.s3.aws_s3_get(logger, args.normal_s3_url, inputdir,
-                                             args.n_s3_profile, args.n_s3_endpoint, recursive=False)
+    normal_download_cmd = " ".join(utils.s3.aws_s3_get(logger, args.normal_s3_url, inputdir,
+                                             args.n_s3_profile, args.n_s3_endpoint, recursive=False))
     tumor_bam = os.path.join(inputdir, os.path.basename(args.tumor_s3_url))
-    tumor_download_exit_code = utils.s3.aws_s3_get(logger, args.tumor_s3_url, inputdir,
-                                             args.t_s3_profile, args.t_s3_endpoint, recursive=False)
+    tumor_download_cmd = " ".join(utils.s3.aws_s3_get(logger, args.tumor_s3_url, inputdir,
+                                             args.t_s3_profile, args.t_s3_endpoint, recursive=False))
+    download_cmd = [normal_download_cmd, tumor_download_cmd]
+    download_exit = utils.pipeline.multi_commands(download_cmd, 2, logger)
     download_end_time = time.time()
     download_time = download_end_time - cwl_start
-    if not (normal_download_exit_code != 0 or tumor_download_exit_code != 0):
-        logger.info("Download successfully. Normal bam is %s, and tumor bam is %s." % (normal_bam, tumor_bam))
-    else:
+    if any(x != 0 for x in download_exit):
         cwl_elapsed = download_time
         datetime_end = str(datetime.datetime.now())
         engine = postgres.utils.get_db_engine(postgres_config)
-        exit_code_list = [int(normal_download_exit_code), int(tumor_download_exit_code)]
-        download_exit_code = next((x for x in exit_code_list if x != 0), None)
+        download_exit_code = next((x for x in download_exit if x != 0), None)
         postgres.utils.set_download_error(download_exit_code, logger, engine,
                                           args.case_id, args.tumor_gdc_id, args.normal_gdc_id, output_id,
                                           datetime_start, datetime_end,
@@ -136,9 +135,20 @@ def run_pipeline(args, statusclass, metricsclass):
                                           download_time, cwl_elapsed, statusclass, metricsclass)
         # Exit
         sys.exit(download_exit_code)
+    else:
+        logger.info("Download successfully. Normal bam is %s, and tumor bam is %s." % (normal_bam, tumor_bam))
     # Build index
-    normal_bam_index = utils.pipeline.get_index(logger, inputdir, normal_bam)
-    tumor_bam_index = utils.pipeline.get_index(logger, inputdir, tumor_bam)
+    normal_bam_index_cmd = " ".join(['samtools', 'index', normal_bam])
+    tumor_bam_index_cmd = " ".join(['samtools', 'index', tumor_bam])
+    index_cmd = [normal_bam_index_cmd, tumor_bam_index_cmd]
+    index_exit = utils.pipeline.multi_commands(index_cmd, 2, logger)
+    if any(x != 0 for x in index_exit):
+        logger.info("Failed to build bam index.")
+        index_exit_code = next((x for x in index_exit if x != 0), None)
+        sys.exit(index_exit_code)
+    else:
+        normal_bam_index = utils.pipeline.get_index(logger, inputdir, normal_bam)
+        tumor_bam_index = utils.pipeline.get_index(logger, inputdir, tumor_bam)
     # Create input json
     input_json_list = []
     for i, block in enumerate(utils.pipeline.fai_chunk(reference_fasta_fai, args.block)):
@@ -168,7 +178,7 @@ def run_pipeline(args, statusclass, metricsclass):
     # Run CWL
     os.chdir(workdir)
     logger.info('Running CWL workflow')
-    cmds = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.cwl, input_json = input_json_list, output_id = output_id))
+    cmds = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.cwl, input_json = input_json_list))
     cwl_exit = utils.pipeline.multi_commands(cmds, args.thread_count, logger)
     # Create sort json
     raw_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf"))
@@ -177,31 +187,11 @@ def run_pipeline(args, statusclass, metricsclass):
     raw_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
     loh_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
     hc_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
+    sort_json_list = [raw_sort_json, loh_sort_json, hc_sort_json]
     # Run Sort
-    raw_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
-               "--debug",
-               "--tmpdir-prefix", inputdir,
-               "--tmp-outdir-prefix", workdir,
-               args.sort,
-               raw_sort_json]
-    raw_exit = utils.pipeline.run_command(raw_cmd, logger)
-    cwl_exit.append(raw_exit)
-    loh_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
-               "--debug",
-               "--tmpdir-prefix", inputdir,
-               "--tmp-outdir-prefix", workdir,
-               args.sort,
-               loh_sort_json]
-    loh_exit = utils.pipeline.run_command(loh_cmd, logger)
-    cwl_exit.append(loh_exit)
-    hc_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
-               "--debug",
-               "--tmpdir-prefix", inputdir,
-               "--tmp-outdir-prefix", workdir,
-               args.sort,
-               hc_sort_json]
-    hc_exit = utils.pipeline.run_command(hc_cmd, logger)
-    cwl_exit.append(hc_exit)
+    sort_cmd = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.sort, input_json = sort_json_list))
+    sort_cmd_exit = utils.pipeline.multi_commands(sort_cmd, 3, logger)
+    cwl_exit.extend(sort_cmd_exit)
     # Annotate filters back to original VCF
     raw_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "raw"))
     hc_vcf = os.path.join(workdir, "{0}.{1}.vcf.gz".format(str(output_id), "hc"))
