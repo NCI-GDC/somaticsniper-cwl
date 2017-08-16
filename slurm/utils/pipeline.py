@@ -38,7 +38,7 @@ def multi_commands(cmds, thread_count, logger):
     output = pool.map(partial(do_pool_commands, logger=logger), cmds)
     return output
 
-def cmd_template(inputdir, workdir, cwl_path, input_json, output_id):
+def cmd_template(inputdir, workdir, cwl_path, input_json):
     template = string.Template("/usr/bin/time -v /home/ubuntu/.virtualenvs/p2/bin/cwltool --tmpdir-prefix ${INP} --tmp-outdir-prefix ${WKD} ${CWL} ${IJ}")
     for i in input_json:
         cmd = template.substitute(dict(INP = inputdir,
