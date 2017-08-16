@@ -2,66 +2,71 @@
 
 cwlVersion: v1.0
 
+class: CommandLineTool
+
 requirements:
   - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
+  - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: quay.io/shenglai/picard-sortvcf-tool:1.0a
 
-class: CommandLineTool
-
 inputs:
-  - id: host
+  - id: java_opts
     type: string
-    doc: Host ip for postgres database server.
+    default: "16G"
+    doc: |
+      "JVM arguments should be a quoted, space separated list (e.g. -Xmx8g -Xmx16g -Xms128m -Xmx512m)"
     inputBinding:
-      prefix: "--host"
+      position: 1
+      prefix: "-Xmx"
+      separate: false
 
-  - id: vcf_path
-    doc: Scattered outputs from Genotypegvcfs.
-    type:
-      type: array
-      items: File
-      inputBinding:
-        prefix: "--vcf_path"
+  - id: nthreads
+    type: int
+    default: 8
+    inputBinding:
+      position: 2
+      prefix: "-XX:ParallelGCThreads="
+      separate: false
+
+  - id: reference_dict
+    type: File
+    inputBinding:
+      position: 5
+      prefix: "SEQUENCE_DICTIONARY="
+      separate: false
 
   - id: output_vcf
     type: string
-    doc: File name for output vcf. Must be compressed. (e.g. output.vcf.gz)
     inputBinding:
-      prefix: --output_vcf
+      position: 6
+      prefix: "OUTPUT="
+      separate: false
 
-  - id: reference_fasta_dict
+  - id: input_vcf
     type: File
-    doc: Dict file from human reference genome. (picard create index)
     inputBinding:
-      prefix: --reference_fasta_dict
-
-  - id: case_id
-    type: string
-    doc: Case id.
-    inputBinding:
-      prefix: --case_id
-
-  - id: postgres_config
-    type: File
-    doc: Postgres config file.
-    inputBinding:
-      prefix: --postgres_config
+      prefix: "I="
+      separate: false
+      position: 7
 
 outputs:
-  - id: output_sorted_vcf
+  - id: sorted_output_vcf
     type: File
-    doc: Sorted vcf file.
     outputBinding:
       glob: $(inputs.output_vcf)
     secondaryFiles:
       - ".tbi"
 
-  - id: log
-    type: File
-    doc: python log file
-    outputBinding:
-      glob: $(inputs.case_id+"_picard_sortvcf.log")
-
-baseCommand: ["/home/ubuntu/.virtualenvs/p3/bin/python","/home/ubuntu/tools/picard_tool/main.py"]
+baseCommand: java
+arguments:
+  - valueFrom: "/home/ubuntu/tools/picard-tools/picard.jar"
+    prefix: "-jar"
+    position: 3
+  - valueFrom: "SortVcf"
+    position: 4
+  - valueFrom: "true"
+    position: 8
+    prefix: "CREATE_INDEX="
+    separate: false

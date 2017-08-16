@@ -174,9 +174,9 @@ def run_pipeline(args, statusclass, metricsclass):
     raw_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf"))
     loh_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf.SNPfilter"))
     hc_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf.SNPfilter.hc"))
-    raw_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
-    loh_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
-    hc_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
+    raw_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
+    loh_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
+    hc_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
     # Run Sort
     raw_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                "--debug",
@@ -208,7 +208,7 @@ def run_pipeline(args, statusclass, metricsclass):
     new_vcf = os.path.join(workdir, "{0}.{1}.vcf".format(str(output_id), "annotated"))
     utils.pipeline.annotate_filter(raw_vcf, hc_vcf, new_vcf)
     # Run sort again on annotated VCF
-    final_sort_json = utils.pipeline.create_sort_json(args.case_id, reference_fasta_dict, postgres_config, str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], logger)
+    final_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], logger)
     final_sort_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                       "--debug",
                       "--tmpdir-prefix", inputdir,
