@@ -45,11 +45,16 @@ inputs:
       separate: false
 
   - id: input_vcf
-    type: File
+    type:
+      type: array
+      items: File
+      inputBinding:
+        prefix: "I="
+        separate: false
     inputBinding:
-      prefix: "I="
-      separate: false
       position: 7
+    secondaryFiles:
+      - ".tbi"
 
 outputs:
   - id: sorted_output_vcf
