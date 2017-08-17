@@ -28,12 +28,7 @@ def aws_s3_get(logger, remote_input, local_output, profile, endpoint_url, recurs
                '--endpoint-url', endpoint_url, '--no-verify-ssl', 's3', 'cp', remote_input,
                local_output]
         if recursive: cmd.append('--recursive')
-        exit_code = utils.pipeline.run_command(cmd, logger)
-
-    else:
-        raise Exception("invalid input %s" % remote_input)
-
-    return exit_code
+    return cmd
 
 def aws_s3_put(logger, remote_output, local_input, profile, endpoint_url, recursive=True):
     '''
