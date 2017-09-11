@@ -171,7 +171,7 @@ def run_pipeline(args, statusclass, metricsclass):
           "normal_input": {"class": "File", "path": normal_bam},
           "tumor_input": {"class": "File", "path": tumor_bam},
           "region": "{0}:{1}-{2}".format(block[0], block[1], block[2]),
-          "prefix": '{}_{}_{}'.format(block[0], str(block[1]).replace('0000001', '0M1'), utils.pipeline.replace_last(str(block[2]), '000000', 'M', 1)),
+          "prefix": "{0}_{1}_{2}".format(block[0], block[1], block[2]),
           "map_q": map_q,
           "base_q": base_q,
           "loh": loh,
