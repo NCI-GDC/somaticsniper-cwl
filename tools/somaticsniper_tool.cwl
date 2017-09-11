@@ -109,17 +109,17 @@ inputs:
       position: 12
       prefix: -F
 
-  - id: normal
+  - id: tumor
     type: File
-    doc: input normal bam
+    doc: input tumor bam
     inputBinding:
       position: 13
     secondaryFiles:
       - '.bai'
-
-  - id: tumor
+      
+  - id: normal
     type: File
-    doc: input tumor bam
+    doc: input normal bam
     inputBinding:
       position: 14
     secondaryFiles:
