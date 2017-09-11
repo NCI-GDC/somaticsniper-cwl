@@ -2,6 +2,9 @@
 
 cwlVersion: v1.0
 
+doc: |
+    Run Somaticsniper (v1.0.5) pipeline
+    
 class: Workflow
 
 requirements:
