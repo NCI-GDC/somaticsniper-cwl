@@ -50,7 +50,8 @@ def get_args():
     required.add_argument("--basedir", default="/mnt/SCRATCH/", help="Base directory for computations.")
     required.add_argument("--refdir", required=True, help="Path to reference directory.")
     required.add_argument("--cwl", required=True, help="Path to CWL workflow.")
-    required.add_argument("--sort", required=True, help="Path to Picard sortvcf CWL tool.")
+    required.add_argument("--sort_cwl", required=True, help="Path to Picard sortvcf CWL tool.")
+    required.add_argument("--index_cwl", required=True, help="Path to Picard buildbamindex CWL tool.")
     required.add_argument("--s3dir", default="s3://", help="S3bin for uploading output files.")
     required.add_argument("--s3_profile", required=True, help="S3 profile name for project tenant.")
     required.add_argument("--s3_endpoint", required=True, help="S3 endpoint url for project tenant.")
@@ -202,7 +203,7 @@ def run_pipeline(args, statusclass, metricsclass):
     hc_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "hc", jsondir, hc_vcf_list, logger)
     sort_json_list = [raw_sort_json, loh_sort_json, hc_sort_json]
     # Run Sort
-    sort_cmd = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.sort, input_json = sort_json_list))
+    sort_cmd = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.sort_cwl, input_json = sort_json_list))
     sort_cmd_exit = utils.pipeline.multi_commands(sort_cmd, 3, logger)
     cwl_exit.extend(sort_cmd_exit)
     # Annotate filters back to original VCF
@@ -216,7 +217,7 @@ def run_pipeline(args, statusclass, metricsclass):
                       "--debug",
                       "--tmpdir-prefix", inputdir,
                       "--tmp-outdir-prefix", workdir,
-                      args.sort,
+                      args.sort_cwl,
                       final_sort_json]
     final_exit = utils.pipeline.run_command(final_sort_cmd, logger)
     cwl_exit.append(final_exit)

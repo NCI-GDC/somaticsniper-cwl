@@ -52,7 +52,8 @@ trap cleanup EXIT
 --basedir $basedir \
 --refdir $refdir \
 --cwl $basedir/somaticsniper-cwl/workflows/somaticsniper_workflow.cwl \
---sort $basedir/somaticsniper-cwl/tools/picard_sortvcf.cwl \
+--sort_cwl $basedir/somaticsniper-cwl/tools/picard_sortvcf.cwl \
+--index_cwl $basedir/somaticsniper-cwl/tools/picard_index.cwl \
 --s3dir $s3dir \
 --s3_profile $s3_profile \
 --s3_endpoint $s3_endpoint \
