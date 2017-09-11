@@ -18,6 +18,7 @@ import postgres.utils
 import postgres.mixins
 import glob
 from sqlalchemy.exc import NoSuchTableError
+import pkg_resources
 
 def is_nat(x):
     '''
@@ -108,19 +109,19 @@ def run_pipeline(args, statusclass, metricsclass):
     fout                  = reference_data["fout"]
     postgres_config       = os.path.join(refdir, reference_data["pg_config"])
     # Logging pipeline info
-    cwl_version    = reference_data["cwl_version"]
+    cwl_version    = pkg_resources.get_distribution("cwltool").version
     docker_version = reference_data["docker_version"]
     logger.info("cwl_version: {}".format(cwl_version))
     logger.info("docker_version: {}".format(docker_version))
     # Download input
     normal_bam = os.path.join(inputdir, os.path.basename(args.normal_s3_url))
-    normal_download_cmd = " ".join(utils.s3.aws_s3_get(logger, args.normal_s3_url, inputdir,
-                                             args.n_s3_profile, args.n_s3_endpoint, recursive=False))
+    normal_download_cmd = utils.s3.aws_s3_get(logger, args.normal_s3_url, inputdir,
+                                             args.n_s3_profile, args.n_s3_endpoint, recursive=False)
     tumor_bam = os.path.join(inputdir, os.path.basename(args.tumor_s3_url))
-    tumor_download_cmd = " ".join(utils.s3.aws_s3_get(logger, args.tumor_s3_url, inputdir,
-                                             args.t_s3_profile, args.t_s3_endpoint, recursive=False))
+    tumor_download_cmd = utils.s3.aws_s3_get(logger, args.tumor_s3_url, inputdir,
+                                             args.t_s3_profile, args.t_s3_endpoint, recursive=False)
     download_cmd = [normal_download_cmd, tumor_download_cmd]
-    download_exit = utils.pipeline.multi_commands(download_cmd, 2, logger)
+    download_exit = utils.pipeline.multi_commands(download_cmd, 2, logger, shell_var=False)
     download_end_time = time.time()
     download_time = download_end_time - cwl_start
     if any(x != 0 for x in download_exit):
@@ -137,18 +138,30 @@ def run_pipeline(args, statusclass, metricsclass):
         sys.exit(download_exit_code)
     else:
         logger.info("Download successfully. Normal bam is %s, and tumor bam is %s." % (normal_bam, tumor_bam))
+    # Pull docker images
+    docker_pull_cmd_list = []
+    for image in docker_version:
+        cmd = utils.pipeline.docker_pull_cmd(image)
+        docker_pull_cmd_list.append(cmd)
+    docker_pull_exit = utils.pipeline.multi_commands(docker_pull_cmd_list, len(docker_pull_cmd_list), logger)
+    if any(x != 0 for x in docker_pull_exit):
+        logger.info("Failed to pull docker images.")
+        docker_pull_exit_code = next((x for x in index_exit if x != 0), None)
+        sys.exit(docker_pull_exit_code)
+    else:
+        logger.info("Pulled all docker images. {}".format(docker_version))
     # Build index
-    normal_bam_index_cmd = " ".join(['samtools', 'index', normal_bam])
-    tumor_bam_index_cmd = " ".join(['samtools', 'index', tumor_bam])
+    normal_bam_index_cmd = utils.pipeline.get_index_cmd(inputdir, args.index_cwl, normal_bam)
+    tumor_bam_index_cmd = utils.pipeline.get_index_cmd(inputdir, args.index_cwl, tumor_bam)
     index_cmd = [normal_bam_index_cmd, tumor_bam_index_cmd]
-    index_exit = utils.pipeline.multi_commands(index_cmd, 2, logger)
+    os.chdir(inputdir)
+    index_exit = utils.pipeline.multi_commands(index_cmd, 2, logger, shell_var=False)
     if any(x != 0 for x in index_exit):
         logger.info("Failed to build bam index.")
         index_exit_code = next((x for x in index_exit if x != 0), None)
         sys.exit(index_exit_code)
     else:
-        normal_bam_index = utils.pipeline.get_index(logger, inputdir, normal_bam)
-        tumor_bam_index = utils.pipeline.get_index(logger, inputdir, tumor_bam)
+        logger.info("Build {}, {} index successfully".format(os.path.basename(normal_bam), os.path.basename(tumor_bam)))
     # Create input json
     input_json_list = []
     for i, block in enumerate(utils.pipeline.fai_chunk(reference_fasta_fai, args.block)):
@@ -184,9 +197,9 @@ def run_pipeline(args, statusclass, metricsclass):
     raw_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf"))
     loh_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf.SNPfilter"))
     hc_vcf_list = glob.glob(os.path.join(workdir, "*.raw.vcf.SNPfilter.hc"))
-    raw_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "raw", jsondir, workdir, raw_vcf_list, logger)
-    loh_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "loh", jsondir, workdir, loh_vcf_list, logger)
-    hc_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "hc", jsondir, workdir, hc_vcf_list, logger)
+    raw_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "raw", jsondir, raw_vcf_list, logger)
+    loh_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "loh", jsondir, loh_vcf_list, logger)
+    hc_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "hc", jsondir, hc_vcf_list, logger)
     sort_json_list = [raw_sort_json, loh_sort_json, hc_sort_json]
     # Run Sort
     sort_cmd = list(utils.pipeline.cmd_template(inputdir = inputdir, workdir = workdir, cwl_path = args.sort, input_json = sort_json_list))
@@ -198,7 +211,7 @@ def run_pipeline(args, statusclass, metricsclass):
     new_vcf = os.path.join(workdir, "{0}.{1}.vcf".format(str(output_id), "annotated"))
     utils.pipeline.annotate_filter(raw_vcf, hc_vcf, new_vcf)
     # Run sort again on annotated VCF
-    final_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "annotated_sorted", jsondir, workdir, [new_vcf], logger)
+    final_sort_json = utils.pipeline.create_sort_json(reference_fasta_dict, str(output_id), "annotated_sorted", jsondir, [new_vcf], logger)
     final_sort_cmd = ['/home/ubuntu/.virtualenvs/p2/bin/cwltool',
                       "--debug",
                       "--tmpdir-prefix", inputdir,
