@@ -28,7 +28,7 @@ inputs:
     doc: prefix for outputs
   - id: map_q
     type: string
-    default: '0'
+    default: '1'
     doc: filtering reads with mapping quality less than this value
   - id: base_q
     type: string
@@ -36,11 +36,11 @@ inputs:
     doc: filtering somatic snv output with somatic quality less than this value
   - id: loh
     type: boolean
-    default: false
+    default: true
     doc: do not report LOH variants as determined by genotypes (T/F)
   - id: gor
     type: boolean
-    default: false
+    default: true
     doc: do not report Gain of Reference variants as determined by genotypes (T/F)
   - id: psc
     type: boolean
