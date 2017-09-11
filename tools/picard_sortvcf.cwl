@@ -5,43 +5,41 @@ cwlVersion: v1.0
 class: CommandLineTool
 
 requirements:
-  - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
-  - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/shenglai/picard-sortvcf-tool:1.0a
+    dockerPull: quay.io/ncigdc/picard
 
 inputs:
   - id: java_opts
     type: string
-    default: "16G"
+    default: '16G'
     doc: |
-      "JVM arguments should be a quoted, space separated list (e.g. -Xmx8g -Xmx16g -Xms128m -Xmx512m)"
+      'JVM arguments should be a quoted, space separated list (e.g. -Xmx8g -Xmx16g -Xms128m -Xmx512m)'
     inputBinding:
-      position: 1
-      prefix: "-Xmx"
+      position: 3
+      prefix: '-Xmx'
       separate: false
 
   - id: nthreads
     type: int
     default: 8
     inputBinding:
-      position: 2
-      prefix: "-XX:ParallelGCThreads="
+      position: 4
+      prefix: '-XX:ParallelGCThreads='
       separate: false
 
-  - id: reference_dict
+  - id: ref_dict
     type: File
     inputBinding:
-      position: 5
-      prefix: "SEQUENCE_DICTIONARY="
+      position: 7
+      prefix: 'SEQUENCE_DICTIONARY='
       separate: false
 
   - id: output_vcf
     type: string
     inputBinding:
-      position: 6
-      prefix: "OUTPUT="
+      position: 8
+      prefix: 'OUTPUT='
       separate: false
 
   - id: input_vcf
@@ -49,10 +47,10 @@ inputs:
       type: array
       items: File
       inputBinding:
-        prefix: "I="
+        prefix: 'I='
         separate: false
     inputBinding:
-      position: 7
+      position: 9
 
 outputs:
   - id: sorted_output_vcf
@@ -60,16 +58,16 @@ outputs:
     outputBinding:
       glob: $(inputs.output_vcf)
     secondaryFiles:
-      - ".tbi"
+      - '.tbi'
 
-baseCommand: java
+baseCommand: ['java', '-d64', '-XX:+UseSerialGC']
 arguments:
-  - valueFrom: "/home/ubuntu/tools/picard-tools/picard.jar"
-    prefix: "-jar"
-    position: 3
-  - valueFrom: "SortVcf"
-    position: 4
-  - valueFrom: "true"
-    position: 8
-    prefix: "CREATE_INDEX="
+  - valueFrom: '/usr/local/bin/picard.jar'
+    prefix: '-jar'
+    position: 5
+  - valueFrom: 'SortVcf'
+    position: 6
+  - valueFrom: 'true'
+    position: 10
+    prefix: 'CREATE_INDEX='
     separate: false
