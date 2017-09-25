@@ -143,7 +143,7 @@ def run_pipeline(args, statusclass, metricsclass):
     docker_pull_exit = []
     for image in docker_version:
         dp_cmd = utils.pipeline.docker_pull_cmd(image)
-        dp_cmd_exit = utils.pipeline.run_command(cmd, logger, shell_var=True)
+        dp_cmd_exit = utils.pipeline.run_command(dp_cmd, logger, shell_var=True)
         docker_pull_exit.append(dp_cmd_exit)
     if any(x != 0 for x in docker_pull_exit):
         logger.info("Failed to pull docker images.")
