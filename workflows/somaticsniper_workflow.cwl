@@ -4,7 +4,7 @@ cwlVersion: v1.0
 
 doc: |
     Run Somaticsniper (v1.0.5) pipeline
-    
+
 class: Workflow
 
 requirements:
@@ -87,7 +87,7 @@ outputs:
 
 steps:
   - id: samtools_workflow
-    run: samtools_workflow.cwl
+    run: ../../samtools-cwl/workflows/samtools_workflow.cwl
     in:
       - id: normal_input
         source: normal_input
