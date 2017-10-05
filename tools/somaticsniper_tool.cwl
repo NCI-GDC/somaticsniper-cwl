@@ -21,17 +21,17 @@ inputs:
       - '.fai'
 
   - id: map_q
-    type: string
+    type: int
     doc: filtering reads with mapping quality less than this value
-    default: '0'
+    default: 0
     inputBinding:
       position: 2
       prefix: -q
 
   - id: base_q
-    type: string
+    type: int
     doc: filtering somatic snv output with somatic quality less than this value
-    default: '15'
+    default: 15
     inputBinding:
       position: 3
       prefix: -Q
@@ -39,7 +39,7 @@ inputs:
   - id: loh
     type: boolean
     doc: do not report LOH variants as determined by genotypes (T/F)
-    default: false
+    default: true
     inputBinding:
       position: 4
       prefix: -L
@@ -47,7 +47,7 @@ inputs:
   - id: gor
     type: boolean
     doc: do not report Gain of Reference variants as determined by genotypes (T/F)
-    default: false
+    default: true
     inputBinding:
       position: 5
       prefix: -G
@@ -69,33 +69,33 @@ inputs:
       prefix: -J
 
   - id: pps
-    type: string
+    type: float
     doc: prior probability of a somatic mutation (implies -J)
-    default: '0.01'
+    default: 0.01
     inputBinding:
       position: 8
       prefix: -s
 
   - id: theta
-    type: string
+    type: float
     doc: theta in maq consensus calling model (for -c/-g)
-    default: '0.85'
+    default: 0.85
     inputBinding:
       position: 9
       prefix: -T
 
   - id: nhap
-    type: string
+    type: int
     doc: number of haplotypes in the sample
-    default: '2'
+    default: 2
     inputBinding:
       position: 10
       prefix: -N
 
   - id: pd
-    type: string
+    type: float
     doc: prior of a difference between two haplotypes
-    default: '0.001'
+    default: 0.001
     inputBinding:
       position: 11
       prefix: -r
