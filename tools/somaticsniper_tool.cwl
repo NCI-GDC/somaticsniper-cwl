@@ -124,16 +124,13 @@ inputs:
     secondaryFiles:
       - '.bai'
 
-  - id: out
-    type: string
-    doc: output name
-    inputBinding:
-      position: 15
-
 outputs:
   - id: output
     type: File
     outputBinding:
-      glob: $(inputs.out)
+      glob: $(inputs.tumor.nameroot + '.raw.vcf')
 
 baseCommand: ['bam-somaticsniper']
+argument:
+  - valueFrom: $(inputs.tumor.nameroot + '.raw.vcf')
+    position: 99

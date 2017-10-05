@@ -14,130 +14,92 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  - id: normal_input
+  normal_input:
     type: File
     doc: normal input bam for samtools splitting
-  - id: tumor_input
+  tumor_input:
     type: File
     doc: tumor input bam for samtools splitting
-  - id: region
-    type: string
-    doc: "chromosomes region for samtools splitting (e.g chr1:1-3000)"
-  - id: reference
+  mpileup:
+    type: File
+    doc: mpileup file on t/n pair
+  reference:
     type: File
     doc: human reference genome
-  - id: prefix
-    type: string
-    doc: prefix for outputs
-  - id: map_q
-    type: string
-    default: '1'
+  map_q:
+    type: int
+    default: 1
     doc: filtering reads with mapping quality less than this value
-  - id: base_q
-    type: string
-    default: '15'
+  base_q:
+    type: int
+    default: 15
     doc: filtering somatic snv output with somatic quality less than this value
-  - id: loh
+  loh:
     type: boolean
     default: true
     doc: do not report LOH variants as determined by genotypes (T/F)
-  - id: gor
+  gor:
     type: boolean
     default: true
     doc: do not report Gain of Reference variants as determined by genotypes (T/F)
-  - id: psc
+  psc:
     type: boolean
     default: false
     doc: disable priors in the somatic calculation. Increases sensitivity for solid tumors (T/F)
-  - id: ppa
+  ppa:
     type: boolean
     default: false
     doc: Use prior probabilities accounting for the somatic mutation rate (T/F)
-  - id: pps
-    type: string
-    default: '0.01'
+  pps:
+    type: float
+    default: 0.01
     doc: prior probability of a somatic mutation (implies -J)
-  - id: theta
-    type: string
-    default: '0.85'
+  theta:
+    type: float
+    default: 0.85
     doc: theta in maq consensus calling model (for -c/-g)
-  - id: nhap
-    type: string
-    default: '2'
+  nhap:
+    type: int
+    default: 2
     doc: number of haplotypes in the sample
-  - id: pd
-    type: string
-    default: '0.001'
+  pd:
+    type: float
+    default: 0.001
     doc: prior of a difference between two haplotypes
-  - id: fout
+  fout:
     type: string
     default: 'vcf'
     doc: output format (classic/vcf/bed)
 
 outputs:
-  - id: RAW_VCF
+  RAW_VCF:
     type: File
     outputSource: somaticsniper_calling/output
-  - id: POST_LOH_VCF
+  POST_LOH_VCF:
     type: File
     outputSource: filteration_workflow/POST_LOH_FILTER
-  - id: POST_HC_VCF
+  POST_HC_VCF:
     type: File
     outputSource: filteration_workflow/POST_HC_FILTER
 
 steps:
-  - id: samtools_workflow
-    run: ../../samtools-cwl/workflows/samtools_workflow.cwl
-    in:
-      - id: normal_input
-        source: normal_input
-      - id: tumor_input
-        source: tumor_input
-      - id: region
-        source: region
-      - id: reference
-        source: reference
-      - id: prefix
-        source: prefix
-    out:
-      - id: normal_chunk
-      - id: tumor_chunk
-      - id: chunk_mpileup
-
-  - id: somaticsniper_calling
+  somaticsniper_calling:
     run: ../tools/somaticsniper_tool.cwl
     in:
-      - id: ref
-        source: reference
-      - id: map_q
-        source: map_q
-      - id: base_q
-        source: base_q
-      - id: loh
-        source: loh
-      - id: gor
-        source: gor
-      - id: psc
-        source: psc
-      - id: ppa
-        source: ppa
-      - id: pps
-        source: pps
-      - id: theta
-        source: theta
-      - id: nhap
-        source: nhap
-      - id: pd
-        source: pd
-      - id: fout
-        source: fout
-      - id: normal
-        source: samtools_workflow/normal_chunk
-      - id: tumor
-        source: samtools_workflow/tumor_chunk
-      - id: out
-        source: prefix
-        valueFrom: $(self + '.raw.vcf')
+      ref: reference
+      map_q: map_q
+      base_q: base_q
+      loh: loh
+      gor: gor
+      psc: psc
+      ppa: ppa
+      pps: pps
+      theta: theta
+      nhap: nhap
+      pd: pd
+      fout: fout
+      normal: normal_input
+      tumor: tumor_input
     out:
       - id: output
 
@@ -147,7 +109,7 @@ steps:
       - id: vcf
         source: somaticsniper_calling/output
       - id: pileup
-        source: samtools_workflow/chunk_mpileup
+        source: mpileup
     out:
       - id: POST_LOH_FILTER
       - id: POST_HC_FILTER
