@@ -131,6 +131,6 @@ outputs:
       glob: $(inputs.tumor.nameroot + '.raw.vcf')
 
 baseCommand: ['bam-somaticsniper']
-argument:
+arguments:
   - valueFrom: $(inputs.tumor.nameroot + '.raw.vcf')
     position: 99
