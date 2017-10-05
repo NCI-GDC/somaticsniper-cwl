@@ -103,7 +103,7 @@ steps:
     out:
       - id: output
 
-  - id: filteration_workflow
+  filteration_workflow:
     run: filteration_workflow.cwl
     in:
       - id: vcf
