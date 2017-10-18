@@ -9,7 +9,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
-
+  - class: ResourceRequirement
+  
 inputs:
   - id: ref
     type: File

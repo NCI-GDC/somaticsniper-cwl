@@ -9,7 +9,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: quay.io/shenglai/bam_readcount:1.0
-
+  - class: ResourceRequirement
+  
 inputs:
   - id: base_q
     type: string
