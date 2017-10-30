@@ -13,7 +13,6 @@ requirements:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
-  - class: ResourceRequirement
   
 inputs:
   - id: vcf
