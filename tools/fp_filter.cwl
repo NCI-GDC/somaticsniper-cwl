@@ -13,28 +13,28 @@ requirements:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
-  
+
 inputs:
-  - id: vcf
+  vcf:
     type: File
     inputBinding:
       position: 1
       prefix: --snp-file
       valueFrom: $(self.basename)
 
-  - id: readcount
+  readcount:
     type: File
     inputBinding:
       position: 1
       prefix: --readcount-file
 
 outputs:
-  - id: output_pass
+  output_pass:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.fp_pass')
 
-  - id: output_fail
+  output_fail:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.fp_fail')

@@ -13,23 +13,23 @@ requirements:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
-  
+
 inputs:
-  - id: vcf
+  vcf:
     type: File
     inputBinding:
       position: 1
       prefix: --snp-file
       valueFrom: $(self.basename)
 
-  - id: pileup
+  pileup:
     type: File
     inputBinding:
       position: 1
       prefix: --indel-file
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.SNPfilter')

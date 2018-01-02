@@ -13,9 +13,9 @@ requirements:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
-  
+
 inputs:
-  - id: vcf
+  vcf:
     type: File
     inputBinding:
       position: 1
@@ -23,7 +23,7 @@ inputs:
       valueFrom: $(self.basename)
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.hc')

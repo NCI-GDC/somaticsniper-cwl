@@ -9,9 +9,9 @@ requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
-  
+
 inputs:
-  - id: ref
+  ref:
     type: File
     doc: FILE REQUIRED reference sequence in the FASTA format
     inputBinding:
@@ -20,7 +20,7 @@ inputs:
     secondaryFiles:
       - '.fai'
 
-  - id: map_q
+  map_q:
     type: int
     doc: filtering reads with mapping quality less than this value
     default: 0
@@ -28,7 +28,7 @@ inputs:
       position: 2
       prefix: -q
 
-  - id: base_q
+  base_q:
     type: int
     doc: filtering somatic snv output with somatic quality less than this value
     default: 15
@@ -36,7 +36,7 @@ inputs:
       position: 3
       prefix: -Q
 
-  - id: loh
+  loh:
     type: boolean
     doc: do not report LOH variants as determined by genotypes (T/F)
     default: true
@@ -44,7 +44,7 @@ inputs:
       position: 4
       prefix: -L
 
-  - id: gor
+  gor:
     type: boolean
     doc: do not report Gain of Reference variants as determined by genotypes (T/F)
     default: true
@@ -52,7 +52,7 @@ inputs:
       position: 5
       prefix: -G
 
-  - id: psc
+  psc:
     type: boolean
     doc: disable priors in the somatic calculation. Increases sensitivity for solid tumors (T/F)
     default: false
@@ -60,7 +60,7 @@ inputs:
       position: 6
       prefix: -p
 
-  - id: ppa
+  ppa:
     type: boolean
     doc: Use prior probabilities accounting for the somatic mutation rate (T/F)
     default: false
@@ -68,7 +68,7 @@ inputs:
       position: 7
       prefix: -J
 
-  - id: pps
+  pps:
     type: float
     doc: prior probability of a somatic mutation (implies -J)
     default: 0.01
@@ -76,7 +76,7 @@ inputs:
       position: 8
       prefix: -s
 
-  - id: theta
+  theta:
     type: float
     doc: theta in maq consensus calling model (for -c/-g)
     default: 0.85
@@ -84,7 +84,7 @@ inputs:
       position: 9
       prefix: -T
 
-  - id: nhap
+  nhap:
     type: int
     doc: number of haplotypes in the sample
     default: 2
@@ -92,7 +92,7 @@ inputs:
       position: 10
       prefix: -N
 
-  - id: pd
+  pd:
     type: float
     doc: prior of a difference between two haplotypes
     default: 0.001
@@ -100,7 +100,7 @@ inputs:
       position: 11
       prefix: -r
 
-  - id: fout
+  fout:
     type: string
     doc: output format (classic/vcf/bed)
     default: 'vcf'
@@ -108,7 +108,7 @@ inputs:
       position: 12
       prefix: -F
 
-  - id: tumor
+  tumor:
     type: File
     doc: input tumor bam
     inputBinding:
@@ -116,7 +116,7 @@ inputs:
     secondaryFiles:
       - '.bai'
 
-  - id: normal
+  normal:
     type: File
     doc: input normal bam
     inputBinding:
@@ -125,7 +125,7 @@ inputs:
       - '.bai'
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
       glob: $(inputs.tumor.nameroot + '.raw.vcf')
