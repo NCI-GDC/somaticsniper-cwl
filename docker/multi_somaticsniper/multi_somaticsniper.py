@@ -3,9 +3,7 @@
 
 import os
 import argparse
-import logging
 import subprocess
-import string
 from multiprocessing import Pool
 from functools import partial
 
@@ -15,19 +13,6 @@ def is_nat(x):
         return int(x)
     raise argparse.ArgumentTypeError('%s must be positive, non-zero' % x)
 
-def setup_logging(level, log_name, log_filename):
-    '''Sets up a logger'''
-    logger = logging.getLogger(log_name)
-    logger.setLevel(level)
-    if log_filename is None:
-        shell_log = logging.StreamHandler()
-    else:
-        shell_log = logging.FileHandler(log_filename, mode='w')
-
-    shell_log.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-    logger.addHandler(shell_log)
-    return logger
-
 def get_region(mpileup):
     '''ger region from mpileup filename'''
     namebase = os.path.basename(mpileup)
@@ -35,19 +20,12 @@ def get_region(mpileup):
     region = base.replace('-', ':', 1)
     return region, base
 
-def run_command(cmd, logger=None, shell_var=False):
+def run_command(cmd, shell_var=False):
     '''Runs a subprocess'''
     child = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell_var, executable='/bin/bash')
     stdoutdata, stderrdata = child.communicate()
     exit_code = child.returncode
-    if logger is not None:
-        logger.info(cmd)
-        stdoutdata = stdoutdata.split("\n")
-        for line in stdoutdata:
-            logger.info(line)
-        stderrdata = stderrdata.split("\n")
-        for line in stderrdata:
-            logger.info(line)
+    print stderrdata
     return exit_code
 
 def annotate_filter(raw, post_filter, new):
@@ -84,8 +62,6 @@ def annotate_filter(raw, post_filter, new):
 def somaticsniper(map_q, base_q, pps, theta, nhap, pd, fout, loh, gor, psc, ppa, ref, tumor, normal, mpileup):
     '''run somaticsniper workflow'''
     region, output_base = get_region(mpileup)
-    log_file = '{}.somaticsniper.log'.format(output_base)
-    logger = setup_logging(logging.INFO, output_base, log_file)
     output = output_base + '.vcf'
     calling_cmd = [
         'bam-somaticsniper',
@@ -107,9 +83,10 @@ def somaticsniper(map_q, base_q, pps, theta, nhap, pd, fout, loh, gor, psc, ppa,
         '<(samtools view -b {} {})'.format(normal, region),
         output
     ]
-    calling_output = run_command(' '.join(calling_cmd), logger, shell_var=True)
+    print('Processing somaticsniper {} ...'.format(' '.join(calling_cmd)))
+    calling_output = run_command(' '.join(calling_cmd), shell_var=True)
     if calling_output != 0:
-        logger.info('Failed on somaticsniper calling')
+        print('Failed on somaticsniper calling')
     else:
         loh_filter_cmd = [
             'perl',
@@ -118,9 +95,10 @@ def somaticsniper(map_q, base_q, pps, theta, nhap, pd, fout, loh, gor, psc, ppa,
             '--indel-file', mpileup
         ]
         loh_output = output + '.SNPfilter'
-        loh_cmd_output = run_command(' '.join(loh_filter_cmd), logger, shell_var=True)
+        print('LOH filtering {}'.format(' '.join(loh_filter_cmd)))
+        loh_cmd_output = run_command(' '.join(loh_filter_cmd), shell_var=True)
         if loh_cmd_output != 0:
-            logger.info('Failed on LOH filtering')
+            print('Failed on LOH filtering')
         else:
             hc_filter_cmd = [
                 'perl',
@@ -128,9 +106,10 @@ def somaticsniper(map_q, base_q, pps, theta, nhap, pd, fout, loh, gor, psc, ppa,
                 '--snp-file', loh_output
             ]
             hc_output = loh_output + '.hc'
-            hc_cmd_output = run_command(' '.join(hc_filter_cmd), logger, shell_var=True)
+            print('High confidence filtering {}'.format(' '.join(hc_filter_cmd)))
+            hc_cmd_output = run_command(' '.join(hc_filter_cmd), shell_var=True)
             if hc_cmd_output != 0:
-                logger.info('Failed on HC filtering')
+                print('Failed on HC filtering')
             else:
                 annotated_vcf = output_base + '.annotated.vcf'
                 annotate_filter(output, hc_output, annotated_vcf)
@@ -159,7 +138,7 @@ def main():
     mpileup = args.mpileup
     threads = args.thread_count
     pool = Pool(int(threads))
-    output = pool.map(partial(somaticsniper, args.map_q, args.base_q, args.pps, args.theta, args.nhap, args.pd, args.fout, args.loh, args.gor, args.psc, args.ppa, args.reference_path, args.tumor_bam, args.normal_bam), mpileup)
+    pool.map(partial(somaticsniper, args.map_q, args.base_q, args.pps, args.theta, args.nhap, args.pd, args.fout, args.loh, args.gor, args.psc, args.ppa, args.reference_path, args.tumor_bam, args.normal_bam), mpileup)
 
 if __name__ == '__main__':
     main()

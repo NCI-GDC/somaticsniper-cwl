@@ -11,7 +11,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/multi_somaticsniper:1.0
+    dockerPull: quay.io/ncigdc/multi_somaticsniper:1.2
 
 inputs:
   normal_input:
