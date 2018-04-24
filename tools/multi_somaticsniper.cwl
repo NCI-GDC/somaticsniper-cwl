@@ -11,7 +11,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/multi_somaticsniper:1.2
+    dockerPull: quay.io/ncigdc/multi_somaticsniper:1.3
 
 inputs:
   normal_input:
@@ -128,8 +128,8 @@ inputs:
 
 outputs:
   ANNOTATED_VCF:
-    type: File[]
+    type: File
     outputBinding:
-      glob: '*.annotated.vcf'
+      glob: 'multi_somaticsniper_merged.vcf'
 
 baseCommand: ['python', '/bin/multi_somaticsniper.py']
