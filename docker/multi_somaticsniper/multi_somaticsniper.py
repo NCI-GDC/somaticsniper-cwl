@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''Internal multithreading SomaticSniper calling'''
 
+import glob
 import os
 import argparse
 import subprocess
@@ -139,6 +140,15 @@ def main():
     threads = args.thread_count
     pool = Pool(int(threads))
     pool.map(partial(somaticsniper, args.map_q, args.base_q, args.pps, args.theta, args.nhap, args.pd, args.fout, args.loh, args.gor, args.psc, args.ppa, args.reference_path, args.tumor_bam, args.normal_bam), mpileup)
+    outputs = glob.glob('*.annotated.vcf')
+    first = True
+    with open('multi_somaticsniper_merged.vcf', 'w') as oh:
+        for out in outputs:
+            with open(out) as fh:
+                for line in fh:
+                    if first or not line.startswith('#'):
+                        oh.write(line)
+            first = False
 
 if __name__ == '__main__':
     main()
