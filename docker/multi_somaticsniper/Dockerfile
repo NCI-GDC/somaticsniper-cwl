@@ -9,4 +9,4 @@ RUN cd somatic-sniper-1.0.5.0 && cmake . && make deps && make -j && make install
 
 ADD multi_somaticsniper.py /bin
 
-ENV multi_somaticsniper v1.3
+ENV multi_somaticsniper v1.4

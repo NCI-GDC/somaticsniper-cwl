@@ -115,6 +115,32 @@ def somaticsniper(map_q, base_q, pps, theta, nhap, pd, fout, loh, gor, psc, ppa,
                 annotated_vcf = output_base + '.annotated.vcf'
                 annotate_filter(output, hc_output, annotated_vcf)
 
+def CheckNonStandardVariants(record):
+    if record.startswith('#'):
+        check = False
+    else:
+        good = set(['A', 'C', 'T', 'G'])
+        cols = record.rstrip('\r\n').split('\t')
+        alleles = cols[3].split(',') + cols[4].split(',')
+        alleles_set = set(list(''.join(alleles).upper()))
+        check = alleles_set - good
+    return check
+
+def merge_outputs(output_list, merged_file):
+    first = True
+    with open(merged_file, 'w') as oh:
+        for out in output_list:
+            with open(out) as fh:
+                for line in fh:
+                    if first or not line.startswith('#'):
+                        checkvariants = CheckNonStandardVariants(line)
+                        if checkvariants:
+                            continue
+                        else:
+                            oh.write(line)
+            first = False
+    return merged_file
+
 def main():
     '''main'''
     parser = argparse.ArgumentParser('Internal multithreading SomaticSniper calling.')
@@ -141,14 +167,7 @@ def main():
     pool = Pool(int(threads))
     pool.map(partial(somaticsniper, args.map_q, args.base_q, args.pps, args.theta, args.nhap, args.pd, args.fout, args.loh, args.gor, args.psc, args.ppa, args.reference_path, args.tumor_bam, args.normal_bam), mpileup)
     outputs = glob.glob('*.annotated.vcf')
-    first = True
-    with open('multi_somaticsniper_merged.vcf', 'w') as oh:
-        for out in outputs:
-            with open(out) as fh:
-                for line in fh:
-                    if first or not line.startswith('#'):
-                        oh.write(line)
-            first = False
+    merge_outputs(outputs, 'multi_somaticsniper_merged.vcf')
 
 if __name__ == '__main__':
     main()
