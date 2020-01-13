@@ -1,22 +1,20 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: highconfidence_filter
 requirements:
-  - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.5.0
   - class: InitialWorkDirRequirement
     listing:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
+doc: |
+  SomaticSniper builtin highconfidence filter.
 
 inputs:
-  - id: vcf
+  vcf:
     type: File
     inputBinding:
       position: 1
@@ -24,9 +22,9 @@ inputs:
       valueFrom: $(self.basename)
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.hc')
 
-baseCommand: ['perl', '/home/ubuntu/bin/somatic-sniper-1.0.5.0/src/scripts/highconfidence.pl']
+baseCommand: ['perl', '/opt/somatic-sniper-1.0.5.0/src/scripts/highconfidence.pl']

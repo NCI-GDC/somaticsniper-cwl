@@ -1,25 +1,23 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: bam_readcount.cwl
 requirements:
-  - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/shenglai/bam_readcount:1.0
+    dockerPull: quay.io/ncigdc/bam_readcount:0.8.0
+doc: |
+  Caluclate BAM readcount.
 
 inputs:
-  - id: base_q
+  base_q:
     type: string
     default: '15'
     inputBinding:
       position: 1
       prefix: -b
 
-  - id: ref
+  ref:
     type: File
     inputBinding:
       position: 2
@@ -27,29 +25,29 @@ inputs:
     secondaryFiles:
       - '.fai'
 
-  - id: site_list
+  site_list:
     type: File
     inputBinding:
       position: 3
       prefix: -l
 
-  - id: tumor_bam
+  tumor_bam:
     type: File
     inputBinding:
       position: 4
     secondaryFiles:
       - '.bai'
 
-  - id: out
+  out_name:
     type: string
     inputBinding:
       position: 5
       prefix: '>'
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
-      glob: $(inputs.out)
+      glob: $(inputs.out_name)
 
 baseCommand: ['bam-readcount']

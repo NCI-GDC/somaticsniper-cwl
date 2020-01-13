@@ -1,7 +1,0 @@
-{
-  "normal_input": {"class": "File", "path": "/mnt/benchmark/input/normal.bam"},
-  "tumor_input": {"class": "File", "path": "/mnt/benchmark/input/tumor.bam"},
-  "region": "chr3:1-30000000",
-  "reference": {"class": "File", "path": "/mnt/reference/GRCh38.d1.vd1.fa"},
-  "prefix": "chr3_1_30M"
-}

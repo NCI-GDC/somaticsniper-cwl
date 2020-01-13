@@ -1,22 +1,20 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: prepare_site_list
 requirements:
-  - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.5.0
   - class: InitialWorkDirRequirement
     listing:
       - entry: $(inputs.vcf)
         entryname: $(inputs.vcf.basename)
         writable: True
+doc: |
+  SomaticSniper builtin "prepare_for_readcount.pl".
 
 inputs:
-  - id: vcf
+  vcf:
     type: File
     inputBinding:
       position: 1
@@ -24,7 +22,7 @@ inputs:
       valueFrom: $(self.basename)
 
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
       glob: $(inputs.vcf.basename + '.pos')

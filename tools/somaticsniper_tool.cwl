@@ -1,18 +1,16 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: somaticsniper_tool
 requirements:
-  - $import: envvar-global.cwl
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.5.0
+doc: |
+  SomaticSniper calling (v1.0.5.0).
 
 inputs:
-  - id: ref
+  ref:
     type: File
     doc: FILE REQUIRED reference sequence in the FASTA format
     inputBinding:
@@ -21,39 +19,39 @@ inputs:
     secondaryFiles:
       - '.fai'
 
-  - id: map_q
-    type: string
+  map_q:
+    type: int
     doc: filtering reads with mapping quality less than this value
-    default: '0'
+    default: 0
     inputBinding:
       position: 2
       prefix: -q
 
-  - id: base_q
-    type: string
+  base_q:
+    type: int
     doc: filtering somatic snv output with somatic quality less than this value
-    default: '15'
+    default: 15
     inputBinding:
       position: 3
       prefix: -Q
 
-  - id: loh
+  loh:
     type: boolean
     doc: do not report LOH variants as determined by genotypes (T/F)
-    default: false
+    default: true
     inputBinding:
       position: 4
       prefix: -L
 
-  - id: gor
+  gor:
     type: boolean
     doc: do not report Gain of Reference variants as determined by genotypes (T/F)
-    default: false
+    default: true
     inputBinding:
       position: 5
       prefix: -G
 
-  - id: psc
+  psc:
     type: boolean
     doc: disable priors in the somatic calculation. Increases sensitivity for solid tumors (T/F)
     default: false
@@ -61,7 +59,7 @@ inputs:
       position: 6
       prefix: -p
 
-  - id: ppa
+  ppa:
     type: boolean
     doc: Use prior probabilities accounting for the somatic mutation rate (T/F)
     default: false
@@ -69,39 +67,39 @@ inputs:
       position: 7
       prefix: -J
 
-  - id: pps
-    type: string
+  pps:
+    type: float
     doc: prior probability of a somatic mutation (implies -J)
-    default: '0.01'
+    default: 0.01
     inputBinding:
       position: 8
       prefix: -s
 
-  - id: theta
-    type: string
+  theta:
+    type: float
     doc: theta in maq consensus calling model (for -c/-g)
-    default: '0.85'
+    default: 0.85
     inputBinding:
       position: 9
       prefix: -T
 
-  - id: nhap
-    type: string
+  nhap:
+    type: int
     doc: number of haplotypes in the sample
-    default: '2'
+    default: 2
     inputBinding:
       position: 10
       prefix: -N
 
-  - id: pd
-    type: string
+  pd:
+    type: float
     doc: prior of a difference between two haplotypes
-    default: '0.001'
+    default: 0.001
     inputBinding:
       position: 11
       prefix: -r
 
-  - id: fout
+  fout:
     type: string
     doc: output format (classic/vcf/bed)
     default: 'vcf'
@@ -109,32 +107,29 @@ inputs:
       position: 12
       prefix: -F
 
-  - id: normal
+  tumor:
     type: File
-    doc: input normal bam
+    doc: input tumor bam
     inputBinding:
       position: 13
     secondaryFiles:
       - '.bai'
 
-  - id: tumor
+  normal:
     type: File
-    doc: input tumor bam
+    doc: input normal bam
     inputBinding:
       position: 14
     secondaryFiles:
       - '.bai'
 
-  - id: out
-    type: string
-    doc: output name
-    inputBinding:
-      position: 15
-
 outputs:
-  - id: output
+  output:
     type: File
     outputBinding:
-      glob: $(inputs.out)
+      glob: $(inputs.tumor.nameroot + '.raw.vcf')
 
 baseCommand: ['bam-somaticsniper']
+arguments:
+  - valueFrom: $(inputs.tumor.nameroot + '.raw.vcf')
+    position: 99
