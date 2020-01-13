@@ -1,17 +1,13 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
-doc: |
-    Run multithreading Somaticsniper (v1.0.5) pipeline
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: multi_somaticsniper
 requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: quay.io/ncigdc/multi_somaticsniper:1.4
+doc: |
+    Multithreading on SomaticSniper (v1.0.5).
 
 inputs:
   normal_input:
@@ -132,4 +128,4 @@ outputs:
     outputBinding:
       glob: 'multi_somaticsniper_merged.vcf'
 
-baseCommand: ['python', '/bin/multi_somaticsniper.py']
+baseCommand: ['python', '/opt/multi_somaticsniper.py']

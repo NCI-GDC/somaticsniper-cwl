@@ -1,14 +1,13 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: bam_readcount.cwl
 requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/shenglai/bam_readcount:1.0
+    dockerPull: quay.io/ncigdc/bam_readcount:0.8.0
+doc: |
+  Caluclate BAM readcount.
 
 inputs:
   base_q:

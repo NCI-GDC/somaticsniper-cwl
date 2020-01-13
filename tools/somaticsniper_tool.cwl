@@ -1,14 +1,13 @@
-#!/usr/bin/env cwl-runner
-
-cwlVersion: v1.0
-
 class: CommandLineTool
-
+cwlVersion: v1.0
+id: somaticsniper_tool
 requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.5.0
+doc: |
+  SomaticSniper calling (v1.0.5.0).
 
 inputs:
   ref:
