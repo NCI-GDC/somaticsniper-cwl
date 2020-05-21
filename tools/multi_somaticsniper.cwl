@@ -5,7 +5,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/multi_somaticsniper:a9a45404318646ffd3d20b108f6adfaeb40f2a1b
+    dockerPull: quay.io/ncigdc/multi_somaticsniper:40b90999bffa8ab5b362d93bfea8ad9d27c5a76c
 doc: |
     Multithreading on SomaticSniper (v1.0.5).
 
@@ -128,4 +128,4 @@ outputs:
     outputBinding:
       glob: 'multi_somaticsniper_merged.vcf'
 
-baseCommand: ['python', '/opt/multi_somaticsniper.py']
+baseCommand: ['python3.7', '/opt/multi_somaticsniper_p3.py']
