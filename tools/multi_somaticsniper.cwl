@@ -4,7 +4,7 @@ id: multi_somaticsniper
 requirements:
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.0-59.97cb88c
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.0-71.aeca01f
 doc: |
     Multithreading on SomaticSniper (v1.0.5).
 
@@ -122,6 +122,11 @@ inputs:
     default: 'vcf'
     doc: output format (classic/vcf/bed)
 
+  timeout:
+    type: int?
+    inputBinding:
+      position: 99
+      prefix: --timeout
 outputs:
   ANNOTATED_VCF:
     type: File
