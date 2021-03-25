@@ -4,7 +4,7 @@ id: multi_somaticsniper
 requirements:
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.0-71.aeca01f
+    dockerPull: quay.io/ncigdc/somaticsniper-tool:1.0.0-12.2b754f5
 doc: |
     Multithreading on SomaticSniper (v1.0.5).
 
